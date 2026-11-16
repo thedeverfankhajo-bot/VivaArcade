@@ -14,10 +14,11 @@ This repository also contains dependency-light Phase 2 core primitives:
 - isolated match state machine with server-owned participant and score state;
 - FIFO queue coordinator with one-queue-per-UUID and one-active-match-per-player protection;
 - exclusive arena reservation and owner-scoped release;
-- UUID-based party membership with expiring invites and leader management;
+- connected-player minimum checks before match countdown/start, disconnect/reconnect routing and bounded terminal match history;
+- UUID-based party membership with invite acceptance, decline/cancellation, strict expiry and leader management;
 - 50 deterministic core checks, including simultaneous isolated match sessions.
 
-These Phase 2 classes are not yet connected to live PMMP commands, forms, scheduler, game adapters or persistent crash recovery. See [docs/PHASE2-CORE.md](docs/PHASE2-CORE.md) and [docs/STATUS.md](docs/STATUS.md).
+These Phase 2 classes remain dependency-light core services and are not yet connected to live PMMP commands, forms, scheduler, game adapters, persistent match recovery or in-game party delivery/chat. The new safeguards are covered by deterministic core regressions, but they do not constitute a playable multiplayer network. See [docs/PHASE2-CORE.md](docs/PHASE2-CORE.md) and [docs/STATUS.md](docs/STATUS.md).
 
 ## Requirements
 
