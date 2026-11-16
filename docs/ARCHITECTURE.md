@@ -9,7 +9,8 @@
 - World\\DistrictDirectory: stable IDs, Finglish names, coordinates and color keys for each district; also resolves player coordinates to district bounds.
 - Lobby\\LobbyManager: teleports players to the dedicated world's saved spawn location.
 - Forms\\ArcadeForm: native Bedrock JSON form implementation without FormAPI dependencies.
-- Games\\ParkourRush: live solo mode adapter, checkpoint/fall handling and server-side completion.
+- Games\\ParkourRush: live solo mode adapter, checkpoint/fall handling, server-side completion and active-run/reward queries.
+- Games\\GameCatalog: player-facing catalog of currently playable modes; it hides roadmap-only modes and exposes only categories backed by live gameplay.
 - Storage\\JsonPlayerStorage: UUID-keyed profiles, per-player locks, atomic file replacement, migration defaults and idempotent reward storage.
 - Economy\\WalletService: server-side Dollar facade with credit/debit source allow-lists, unique transaction IDs, non-negative balance enforcement, atomic daily reward claims and recent-ledger reads.
 - Challenges\\DailyRewardService: UTC day policy and reward status; it delegates every claim to WalletService and the locked JSON profile transaction.
