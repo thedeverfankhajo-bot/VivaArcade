@@ -12,9 +12,9 @@ command -v php >/dev/null || { echo "PHP CLI is required" >&2; exit 1; }
 command -v sha256sum >/dev/null || { echo "sha256sum is required" >&2; exit 1; }
 php -r 'foreach (["Phar", "json", "hash", "zlib"] as $ext) { if (!extension_loaded($ext)) { fwrite(STDERR, "Missing PHP extension: {$ext}\n"); exit(1); } }'
 
-mkdir -p "$STAGE" "$DIST"
+mkdir -p "$STAGE/src" "$DIST"
 cp "$ROOT/plugin.yml" "$STAGE/plugin.yml"
-cp -a "$ROOT/src/." "$STAGE/src/"
+cp -a "$ROOT/src/VivaArcade/." "$STAGE/src/"
 if [[ -d "$ROOT/resources" ]]; then
   cp -a "$ROOT/resources/." "$STAGE/resources/"
 fi
@@ -51,7 +51,7 @@ foreach ($iterator as $file) {
         $phar->addFile($file->getPathname(), $relative);
     }
 }
-if (!$phar->offsetExists("plugin.yml") || !$phar->offsetExists("src/VivaArcade/Main.php") || !$phar->offsetExists("resources/config.yml")) {
+if (!$phar->offsetExists("plugin.yml") || !$phar->offsetExists("src/Main.php") || !$phar->offsetExists("resources/config.yml")) {
     throw new RuntimeException("Required plugin files are missing from the PHAR");
 }
 $phar->setStub($phar->createDefaultStub());
