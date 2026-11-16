@@ -1,66 +1,57 @@
 # VivaArcade test results
 
-Updated: 2026-11-16
+Updated: 2026-11-17
 
-## Verified GitHub Actions build
+## CI build for 0.6.1
 
-CI run: https://github.com/thedeverfankhajo-bot/VivaArcade/actions/runs/43903997476
+Run: https://github.com/thedeverfankhajo-bot/VivaArcade/actions/runs/43976065690
 
-- Source commit: `d6a8f093f082426d97cb8f16c28c6d3388d0d8be`
-- Branch: `main`
-- Workflow status: `success`
-- PHP runtime: PocketMine PHP 8.2.30
-- Shell syntax checks: passed for `build.sh` and `scripts/export-world.sh`
-- PHP syntax checks: passed for all packaged source and test PHP files
-- Core regression suite: 79 passed
-- Storage suite: 12 passed
-- Economy suite: 19 passed
-- Daily reward suite: 18 passed
-- Match snapshot suite: 13 passed
-- World layout suite: 137 passed
-- Total reported assertions: 278 passed
-- PHAR manifest validation: passed
-- PHAR packaging and Actions artifact upload: passed
+- Commit: `dd4f558d2a741ad0e28d2ada46d863d26557b1aa`
+- Branch: `main`; status: `success`
+- PHP runtime: 8.1.34
+- Shell syntax checks: passed
+- PHP syntax checks: passed for all source and test files
+- Core: 79 passed
+- Storage: 20 passed, including four overflow and no-partial-write cases
+- Economy: 19 passed
+- Daily reward: 18 passed
+- Match snapshot: 13 passed
+- World layout: 137 passed
+- Total: 286 assertions passed
+- PHAR manifest validation, packaging and artifact upload: passed
 
-## Generated plugin artifact
+The logs contain one pre-existing non-fatal PHP warning in `tests/economy.php`: a global `use InvalidArgumentException` statement has no effect.
 
-Actions artifact: https://github.com/thedeverfankhajo-bot/VivaArcade/actions/runs/43903997476/artifacts/14243732209
+## Plugin artifact
 
-SHA-256:
+Artifact: https://github.com/thedeverfankhajo-bot/VivaArcade/actions/runs/43976065690/artifacts/14280029041
 
 ```text
-cdbdbbf9165aea05b5753a2dc18dd2768133821679eb66abaa9c31ce3274a122  VivaArcade.phar
+621b521d59c8334aa9538ba9681615a69e7950a478f944defc22e6c1a4c9d3d7  VivaArcade.phar
 ```
 
-The PHAR was also opened independently after download; it contains `plugin.yml`, `src/Main.php` and `resources/config.yml`. Its plugin metadata declares PocketMine API 5.0.0 and plugin version 0.6.0.
+The CI workflow verified the PHAR manifest and required files. Metadata declares PocketMine API 5.0.0 and plugin version 0.6.1.
 
-## Verified runtime world export
+## Real PocketMine world artifact
 
-World workflow: https://github.com/thedeverfankhajo-bot/VivaArcade/actions/runs/43903997245
+Previous successful world workflow: https://github.com/thedeverfankhajo-bot/VivaArcade/actions/runs/43903997245
 
-- Source commit: `d6a8f093f082426d97cb8f16c28d6c3388d0d8be`
 - PocketMine-MP: 5.44.3
-- Plugin build with the PMMP PHP runtime: passed
-- VivaArcade world layout: completed in the running server
-- Server stopped before archive/export: passed
-- `level.dat` and non-empty LevelDB `db/` entries: verified
-- ZIP integrity check: passed
-- World artifact upload: passed
+- Layout completed in the running server
+- Server stopped before export
+- `level.dat` and a non-empty LevelDB `db/` directory verified
+- ZIP integrity and artifact upload passed
 
-Actions artifact: https://github.com/thedeverfankhajo-bot/VivaArcade/actions/runs/43903997245/artifacts/14245440150
-
-SHA-256:
+Artifact: https://github.com/thedeverfankhajo-bot/VivaArcade/actions/runs/43903997245/artifacts/14245440150
 
 ```text
 c585b5658844cb79538e896e28fd95913d98e09ad1550f6bf52d1fa158851218  VivaArcade-World.zip
 ```
 
+A repeat export for commit `dd4f558d2a741ad0e28d2ada46d863d26557b1aa` has not completed at the time of this report. The previously verified archive is a PocketMine LevelDB ZIP, not a Bedrock `.mcworld`.
+
 ## Verification boundary
-
-- No Bedrock client was connected. Native form rendering and player interaction still need a real client session.
-- The generated world archive is a PocketMine LevelDB world ZIP. It has not been renamed to `.mcworld` and no Bedrock import is claimed.
-- The 19-district layout completed in PocketMine, but visual inspection in a Bedrock client remains outstanding.
-- The 24 requested playable modes and the full live network systems are not complete.
-- No Resource Pack is claimed or shipped.
-
-Do not treat the repository as a finished arcade network until the outstanding gameplay, multiplayer, client and feature checks have passed.
+- No Bedrock client was connected; forms and actual player interactions still need client testing.
+- The generated 19-district world has not been visually inspected in a Bedrock client.
+- 24 playable modes and the full live multiplayer/network systems are not complete.
+- No Resource Pack is shipped.

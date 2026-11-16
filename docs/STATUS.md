@@ -1,42 +1,36 @@
 # VivaArcade implementation status
 
-Updated: 2026-11-16
+Updated: 2026-11-17
 
 ## Delivered in source
+- PocketMine-MP API 5 plugin entry point, player commands and Native Bedrock forms.
+- Dedicated VivaArcade world creation/loading through PocketMine WorldManager.
+- New-world layout v2 with 19 themed districts, a Main Spawn Plaza, lit avenues, color pylons and gateways.
+- Deterministic incremental builder (one chunk and 180 block writes per tick by default), resumable build marker and preservation of completed older worlds.
+- Solo Parkour Rush with server-side timer, checkpoint, fall recovery, finish and unique reward transaction ID.
+- UUID JSON profiles with per-player locks and atomic replacement.
+- Dollar WalletService, bounded transaction ledger, duplicate protection and no-negative-balance debit checks.
+- Once-per-UTC-day Dollar/XP reward with atomic claim state and Native Bedrock form.
+- Dependency-light ArenaPool, QueueManager, MatchSession and PartyManager primitives.
+- Parkour progression overflow checks and no-partial-write regression coverage.
 
-- PMMP 5 plugin entry point, registered player commands and native Bedrock menu forms.
-- Dedicated world creation/loading through PocketMine WorldManager.
-- New-world layout v2: 19 named themed districts plus the Main Spawn Plaza, connected with illuminated paths, colored concrete, blackstone floors, neon pylons and gateways.
-- Deterministic, incremental world construction through PocketMine scheduled task batches (one chunk and 180 block writes per tick by default).
-- Versioned layout marker; interrupted builds can resume, while completed older worlds are preserved without automatic edits.
-- Solo Parkour Rush with server-owned timer, checkpoint, fall recovery, finish and unique reward transaction IDs.
-- UUID-keyed JSON player profiles, per-player file locks and atomic profile replacement.
-- Dollar WalletService with source allow-lists, unique transaction IDs, duplicate protection, insufficient-funds rejection, earned/spent totals and a bounded ledger.
-- DailyRewardService and `/daily`: once-per-UTC-day Dollar and XP rewards, server-derived claim date, atomic profile update and native Bedrock claim form.
-- Dependency-light QueueManager, ArenaPool, MatchSession and PartyManager primitives.
-- Versioned match snapshots and standalone regression coverage.
-- World export tooling which requires a real stopped-server LevelDB world.
-
-## Runtime verification completed
-
-- GitHub Actions CI run [#43903997476](https://github.com/thedeverfankhajo-bot/VivaArcade/actions/runs/43903997476) succeeded for source commit `d6a8f093f082426d97cb8f16c28d6c3388d0d8be`.
-- All PHP syntax checks passed; test suites reported 278 assertions passed; PHAR manifest validation, packaging and artifact upload passed.
-- PocketMine-MP 5.44.3 ran the plugin in world workflow [#43903997245](https://github.com/thedeverfankhajo-bot/VivaArcade/actions/runs/43903997245). The VivaArcade layout completed, PocketMine stopped cleanly, and the resulting LevelDB ZIP passed file and archive checks.
-- The generated PHAR SHA-256 is `cdbdbbf9165aea05b5753a2dc18dd2768133821679eb66abaa9c31ce3274a122`.
-- The generated world ZIP SHA-256 is `c585b5658844cb79538e896e28fd95913d98e09ad1550f6bf52d1fa158851218`.
+## Latest verification
+- Latest code commit on `main`: `dd4f558d2a741ad0e28d2ada46d863d26557b1aa`.
+- CI run [#43976065690](https://github.com/thedeverfankhajo-bot/VivaArcade/actions/runs/43976065690): success.
+- PHP 8.1.34 syntax and shell syntax checks: passed.
+- Six regression suites: 286 assertions passed (core 79, storage 20, economy 19, daily 18, snapshot 13, world layout 137).
+- PHAR manifest validation, packaging and artifact upload: passed.
+- PHAR SHA-256: `621b521d59c8334aa9538ba9681615a69e7950a478f944defc22e6c1a4c9d3d7`.
+- CI artifact: [vivaarcade-build #14280029041](https://github.com/thedeverfankhajo-bot/VivaArcade/actions/runs/43976065690/artifacts/14280029041).
+- A previous PocketMine-MP 5.44.3 world export succeeded at [run #43903997245](https://github.com/thedeverfankhajo-bot/VivaArcade/actions/runs/43903997245). A repeat export for the latest code commit is still running; no second artifact is claimed yet.
 
 ## Partial / not production-ready
-
-- No Bedrock client was connected. Form rendering, player interaction, movement timing and visual presentation need client-side testing.
-- The 19-district layout completed in PMMP, but its visual quality has not been inspected through a Bedrock client.
-- Existing matchmaking/party code is not wired to live PMMP player events, forms, queues or match instances.
-- WalletService powers `/balance` and the daily reward. Shop purchases, challenge rewards and achievement payouts are not connected.
-- The current main menu exposes only the implemented profile, stats, game selector, daily reward and help paths.
+- No Bedrock client was connected; UI rendering, player interaction, movement timing and visual inspection remain unverified.
+- Existing queue and party code is not connected to live PMMP events, commands, forms, queues or match instances.
+- Wallet is connected to `/balance` and daily rewards only; shop, challenge and achievement payouts are not wired.
+- Main menu currently exposes implemented profile, stats, Parkour Rush, daily reward and help paths only.
 
 ## Not implemented
+24+ playable modes, isolated arena cloning/reset, live matchmaking, party invitation UI/chat/queueing, team/private matches, shop and cosmetics, challenge catalogue, tournaments, persistent leaderboards, scoreboard, achievements, admin panel, SQLite, full inventory/state restoration, full crash recovery, load testing and Resource Pack remain unimplemented.
 
-24+ playable modes, arena instance cloning/reset, live matchmaking, party invitation UI/chat/queueing, spectator mode, private/team matches, SQLite, shop and cosmetics integration, daily/weekly/seasonal challenge catalogue, tournaments/events, persistent leaderboards, scoreboard, achievements, admin panel, full inventory/state restoration, complete crash recovery and load testing remain unimplemented.
-
-## Artifacts
-
-The verified PHAR and world ZIP are downloadable from the two Actions runs above. The files are also provided in the generated delivery bundle. Binary artifacts are not committed to git. No Resource Pack is shipped.
+No Resource Pack or Bedrock `.mcworld` file is shipped. The existing generated world artifact is a PocketMine LevelDB ZIP.
