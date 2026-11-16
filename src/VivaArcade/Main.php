@@ -238,7 +238,6 @@ final class Main extends PluginBase implements Listener{
                             return;
                         }
                         try{
-                            // The server re-checks the current UTC date on claim.
                             $claimed = $this->dailyRewards?->claim(
                                 $target->getUniqueId()->toString(),
                                 $target->getName()
