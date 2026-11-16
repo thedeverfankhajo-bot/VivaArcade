@@ -1,22 +1,34 @@
-# Source Archive Recovery
+# Legacy Source Archive Status
 
-## Problem
+Updated: 2026-11-16
 
-The committed `dist/source.zip` cannot be extracted. The archive is 7,501 bytes and does not contain a ZIP end-of-central-directory record or central directory. A local-header parse reaches `src/VivaArcade/Lobby/LobbyManager.php`, whose header declares 3,248 compressed bytes, but only 1,183 bytes remain in the archive.
+## Historical archive
 
-This means the archive is truncated inside a PHP source file. It is not safe to repair by guessing the missing bytes or writing replacement classes: the missing source may contain important PocketMine API 5 behavior and game/world logic.
+The committed `dist/source.zip` remains a truncated archive (7,501 bytes)
+without a ZIP central directory/end record. It is not recoverable from the
+available repository history without the missing original bytes. It should
+not be patched by guessing source code.
 
-## Required maintainer action
+## Current source tree
 
-1. Recover the original complete source tree from the developer's working copy or backup.
-2. Recreate `dist/source.zip` from that complete source tree, preserving the original relative paths (`plugin.yml`, `src/`, `resources/`, `composer.json`, and `LICENSE`).
-3. Verify the archive locally with `unzip -t dist/source.zip`.
-4. Check that the archive listing includes the plugin main class (declared in `plugin.yml` as `VivaArcade\\Main`), all game implementations, the world/lobby builder and their dependencies.
-5. Commit the repaired archive, then run `./build.sh` and inspect the resulting PHAR contents.
-6. Start the PHAR on a test PocketMine-MP 5 server and verify it with Bedrock clients before claiming runtime compatibility.
+The repository now contains a clean, separate PocketMine-MP API 5 foundation
+under `src/`, with a plugin entry point, Native Bedrock form, Solo Parkour
+Rush, UUID JSON profile storage, a first-run dedicated-world builder, and the
+previously tested matchmaking/party core.
 
-## Why no substitute archive was generated
+The current `build.sh` uses the checked-in `src/`, `resources/`, and root
+`plugin.yml` directly. It does not extract or depend on the damaged legacy
+ZIP. A successful CI build confirms PHP syntax, core/storage/snapshot tests,
+PHAR packaging and manifest validation for this current foundation.
 
-The available repository has no earlier valid version of this ZIP in its commit history. The container also has no PocketMine-MP runtime or LevelDB world, and does not have the SQLite PDO extension. Reconstructing the missing Phase 1 implementation from filenames or documentation would be speculative and could introduce fake APIs, broken game rules or unsafe storage behavior.
+## Recovery boundary
 
-The Phase 2 core services in `src/VivaArcade/Core/` and `src/VivaArcade/Party/` remain independently testable. Their 71 passing tests do not replace the missing plugin implementation and do not constitute a playable server.
+This integration does not reconstruct the missing original Phase 1 classes or
+claim the full 24+ mode network. The current source is a new, smaller
+foundation; features not present in the source are listed as pending in
+`docs/STATUS.md`.
+
+A real PocketMine runtime and Bedrock client are still needed to verify startup,
+world generation/loading, form delivery, movement physics, gameplay and
+world export. A real LevelDB world ZIP must only be created from a world saved
+by PocketMine; see `scripts/export-world.sh`.
