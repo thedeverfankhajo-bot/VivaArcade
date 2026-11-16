@@ -20,6 +20,7 @@ use VivaArcade\Challenges\DailyRewardService;
 use VivaArcade\Forms\ArcadeForm;
 use VivaArcade\Lobby\LobbyManager;
 use VivaArcade\Party\PartyManager;
+use VivaArcade\Games\GameCatalog;
 use VivaArcade\Games\ParkourRush;
 use VivaArcade\Storage\JsonPlayerStorage;
 use VivaArcade\World\ArcadeWorldManager;
@@ -210,17 +211,91 @@ final class Main extends PluginBase implements Listener{
             $player->sendMessage('World dar hale sakht ast ya niaz be migration darad. Bazi pas az takmil faal mishavad.');
             return;
         }
+
+        $categories = GameCatalog::getCategories();
+        $buttons = array_map(
+            static fn(array $category) : string => $category['label'],
+            $categories
+        );
+        $buttons[] = 'Bargasht';
+        $buttons[] = 'Bastan';
+        $categoryCount = count($categories);
+
         $this->sendForm($player, new ArcadeForm(
-            'Entekhab Bazi',
-            'Mode mored nazar ra baraye bazi entekhab kon.',
-            ['Parkour Rush', 'Bargasht', 'Bastan'],
-            function(Player $target, int $choice) : void{
+            'Game Browser',
+            'Daste bandi bazi haye dar dastres ra entekhab konid.',
+            $buttons,
+            function(Player $target, int $choice) use ($categories, $categoryCount) : void{
+                if($choice < $categoryCount){
+                    $this->openGameCategoryMenu($target, $categories[$choice]['id']);
+                }elseif($choice === $categoryCount){
+                    $this->openMainMenu($target);
+                }
+            }
+        ));
+    }
+
+    private function openGameCategoryMenu(Player $player, string $category) : void{
+        $categoryLabel = GameCatalog::getCategoryLabel($category);
+        $games = GameCatalog::getGames($category);
+        if($categoryLabel === null || $games === []){
+            $player->sendMessage('Dar in daste bandi bazi faali vojood nadarad.');
+            return;
+        }
+
+        $buttons = array_map(
+            static fn(array $game) : string => $game['name'],
+            $games
+        );
+        $buttons[] = 'Bargasht';
+        $buttons[] = 'Bastan';
+        $gameCount = count($games);
+
+        $this->sendForm($player, new ArcadeForm(
+            $categoryLabel,
+            'Bazi mored nazar ra baraye didane joziat entekhab konid.',
+            $buttons,
+            function(Player $target, int $choice) use ($games, $gameCount, $category) : void{
+                if($choice < $gameCount){
+                    $this->openGameDetails($target, $games[$choice]['id'], $category);
+                }elseif($choice === $gameCount){
+                    $this->openGamesMenu($target);
+                }
+            }
+        ));
+    }
+
+    private function openGameDetails(Player $player, string $gameId, string $category) : void{
+        $game = GameCatalog::find($gameId);
+        if($game === null || $gameId !== 'parkour-rush' || $this->parkour === null){
+            $player->sendMessage('In game dar hale hazer dar dastres nist.');
+            return;
+        }
+
+        $rewardDollar = max(10, $this->parkour->getConfiguredDollarReward());
+        $rewardXp = $this->parkour->getConfiguredXpReward();
+        $content = $game['description']
+            . "\nDifficulty: " . $game['difficulty']
+            . "\nMinimum Players: " . $game['minimum_players']
+            . "\nMaximum Players: " . $game['maximum_players'] . ' per run'
+            . "\nEstimated Duration: " . $game['estimated_duration']
+            . "\nQueue Status: " . $game['queue_status']
+            . "\nOnline Players: " . count($this->getServer()->getOnlinePlayers())
+            . "\nPlayers In Game: " . $this->parkour->getActivePlayerCount()
+            . "\nAvailable Arenas: " . $game['arena_label']
+            . "\nReward: Up to $" . $rewardDollar . " Dollar + " . $rewardXp . " XP";
+
+        $this->sendForm($player, new ArcadeForm(
+            $game['name'],
+            $content,
+            ['Shoro Kon', 'Bargasht', 'Bastan'],
+            function(Player $target, int $choice) use ($category) : void{
                 if($choice === 0){
-                    if(!$this->parkour?->start($target)){
-                        $target->sendMessage('Shoma alan dar yek bazi hastid.');
+                    if(!$this->worldPlayable || !$this->parkour?->start($target)){
+                        $target->sendMessage('Shoro bazi anjam nashod. Lotfan vaziyat bazi ra check konid.');
                     }
                 }elseif($choice === 1){
-                    $this->openMainMenu($target);
+                    $this->openGameCategoryMenu($target, $category);
                 }
             }
         ));
@@ -302,6 +377,7 @@ final class Main extends PluginBase implements Listener{
             }
         ));
     }
+
     private function showProfile(Player $player) : void{
         $profile = $this->storage?->getProfile($player->getUniqueId()->toString(), $player->getName());
         if($profile === null){
