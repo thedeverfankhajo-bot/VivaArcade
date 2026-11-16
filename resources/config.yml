@@ -7,3 +7,8 @@ parkour:
 daily-reward:
   reward-dollar: 100
   reward-xp: 25
+
+# Temporary online parties; invitations are UUID-bound and expire automatically.
+party:
+  max-members: 8
+  invite-ttl-seconds: 60

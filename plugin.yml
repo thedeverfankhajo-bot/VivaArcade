@@ -1,7 +1,7 @@
 name: VivaArcade
 main: VivaArcade\Main
 src-namespace-prefix: VivaArcade
-version: 0.6.1
+version: 0.7.0
 api: 5.0.0
 load: POSTWORLD
 author: VivaArcade Contributors
@@ -31,6 +31,10 @@ commands:
   daily:
     description: Claim your once-per-day Dollar and XP reward
     usage: "/daily"
+    permission: vivaarcade.command
+  party:
+    description: Create and manage a player party
+    usage: "/party [create|invite|accept|decline|leave|kick|leader|chat]"
     permission: vivaarcade.command
   leave:
     description: Leave your active game

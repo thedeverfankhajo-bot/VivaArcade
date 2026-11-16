@@ -61,6 +61,17 @@ final class PartyManager{
         return true;
     }
 
+    /** Transfer leadership while retaining the party membership indexes. */
+    public function transferLeadership(string $leaderUuid, string $targetUuid) : bool{
+        Party::assertUuid($leaderUuid);
+        Party::assertUuid($targetUuid);
+        $party = $this->getPartyFor($leaderUuid);
+        if($party === null || !$party->isLeader($leaderUuid) || $leaderUuid === $targetUuid || !$party->contains($targetUuid)){
+            return false;
+        }
+        return $party->transferLeadership($leaderUuid, $targetUuid);
+    }
+
     public function kick(string $leaderUuid, string $targetUuid) : bool{
         Party::assertUuid($leaderUuid);
         Party::assertUuid($targetUuid);

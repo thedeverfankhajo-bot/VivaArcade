@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.7.0 - 2026-11-17
+
+### Added
+- Connected UUID-based PartyManager to the PocketMine plugin through `/party` and a Native Bedrock menu.
+- Added create, online invites, expiry-aware accept/decline, member listing, leave/disconnect cleanup, leader-only kick, leadership transfer and Finglish party chat.
+- Added configurable party member cap and invite time-to-live.
+- Added core regression coverage for leader authorization and leadership transfer.
+
+### Scope
+- Party state is transient and in-memory. Party queue, private matches and restart restoration are not part of this release.
+
 ## 0.6.1 - 2026-11-17
 
 ### Security and reliability

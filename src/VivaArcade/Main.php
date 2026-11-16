@@ -19,6 +19,7 @@ use VivaArcade\Economy\WalletService;
 use VivaArcade\Challenges\DailyRewardService;
 use VivaArcade\Forms\ArcadeForm;
 use VivaArcade\Lobby\LobbyManager;
+use VivaArcade\Party\PartyManager;
 use VivaArcade\Games\ParkourRush;
 use VivaArcade\Storage\JsonPlayerStorage;
 use VivaArcade\World\ArcadeWorldManager;
@@ -32,6 +33,7 @@ final class Main extends PluginBase implements Listener{
     private ?WalletService $wallet = null;
     private ?DailyRewardService $dailyRewards = null;
     private ?ParkourRush $parkour = null;
+    private ?PartyManager $partyManager = null;
     private bool $worldPlayable = false;
 
     /** @var array<string, float> */
@@ -51,6 +53,12 @@ final class Main extends PluginBase implements Listener{
                 $this->wallet,
                 max(1, min(100_000, (int) ($dailyConfig['reward-dollar'] ?? 100))),
                 max(0, min(100_000, (int) ($dailyConfig['reward-xp'] ?? 25)))
+            );
+            $partyConfig = $this->getConfig()->get('party', []);
+            if(!is_array($partyConfig)){ $partyConfig = []; }
+            $this->partyManager = new PartyManager(
+                max(2, min(32, (int) ($partyConfig['max-members'] ?? 8))),
+                max(5, min(3600, (int) ($partyConfig['invite-ttl-seconds'] ?? 60)))
             );
             $worldManager = new ArcadeWorldManager($this);
             $this->arcadeWorld = $worldManager->load(function() : void{
@@ -123,6 +131,9 @@ final class Main extends PluginBase implements Listener{
             case 'daily':
                 $this->openDailyMenu($sender);
                 return true;
+            case 'party':
+                $this->handlePartyCommand($sender, $args);
+                return true;
             case 'spawn':
                 $this->parkour?->leave($sender, false);
                 if($this->lobby?->teleport($sender) !== true){
@@ -153,6 +164,7 @@ final class Main extends PluginBase implements Listener{
     public function onQuit(PlayerQuitEvent $event) : void{
         $uuid = $event->getPlayer()->getUniqueId()->toString();
         $this->parkour?->forget($uuid);
+        $this->handlePartyDisconnect($uuid);
         unset($this->lastFormAt[$uuid]);
     }
 
@@ -174,17 +186,19 @@ final class Main extends PluginBase implements Listener{
         $this->sendForm($player, new ArcadeForm(
             'VivaArcade',
             'Be VivaArcade khosh amadid!\nBebin. Bazi kon. Challenge bede. Be bord beres!',
-            ['Bazi', 'Profile', 'Amar', 'Padesh Roozane', 'Komak', 'Bastan'],
+            ['Bazi', 'Party', 'Profile', 'Amar', 'Padesh Roozane', 'Komak', 'Bastan'],
             function(Player $target, int $choice) : void{
                 if($choice === 0){
                     $this->openGamesMenu($target);
                 }elseif($choice === 1){
-                    $this->showProfile($target);
+                    $this->openPartyMenu($target);
                 }elseif($choice === 2){
-                    $this->showStatistics($target);
+                    $this->showProfile($target);
                 }elseif($choice === 3){
-                    $this->openDailyMenu($target);
+                    $this->showStatistics($target);
                 }elseif($choice === 4){
+                    $this->openDailyMenu($target);
+                }elseif($choice === 5){
                     $this->openHelpMenu($target);
                 }
             }
@@ -277,6 +291,7 @@ final class Main extends PluginBase implements Listener{
                 . "\n/stats - Amar"
                 . "\n/balance - Mojoodi Dollar"
                 . "\n/daily - Padesh Roozane"
+                . "\n/party - Party System"
                 . "\n/spawn - Bazgasht be Lobby"
                 . "\n/leave - Khorooj az bazi",
             ['Bargasht', 'Bastan'],
@@ -342,6 +357,172 @@ final class Main extends PluginBase implements Listener{
             return;
         }
         $player->sendMessage('Mojoodi Shoma: $' . $balance);
+    }
+
+    private function handlePartyCommand(Player $player, array $args) : void{
+        $manager = $this->partyManager;
+        if($manager === null){ $player->sendMessage('Party System dar dastres nist.'); return; }
+        $manager->cleanupExpiredInvites();
+        $uuid = $player->getUniqueId()->toString();
+        $action = strtolower((string) ($args[0] ?? 'menu'));
+        $targetName = trim((string) ($args[1] ?? ''));
+        if($action === 'create'){
+            $created = $manager->create($uuid);
+            $player->sendMessage($created !== null ? 'Party shoma ijad shod!' : 'Shoma ghablan ozv yek Party hastid.');
+            $this->openPartyMenu($player);
+            return;
+        }
+        if($action === 'invite'){
+            $target = $this->findOnlinePlayer($targetName);
+            if($target === null || !$manager->invite($uuid, $target->getUniqueId()->toString())){
+                $player->sendMessage('Invite anjam nashod. Esm online player ra check konid va motmaen shavid Leader hastid.');
+                return;
+            }
+            $player->sendMessage('Invite baraye ' . $target->getName() . ' ersal shod.');
+            $target->sendMessage($player->getName() . ' shoma ra be Party davat kard. /party accept ya /party ra bezanid.');
+            return;
+        }
+        if($action === 'accept'){
+            $party = $manager->getPendingInviteParty($uuid);
+            if($party === null || !$manager->accept($uuid)){
+                $player->sendMessage('Invite vojood nadarad, expire shode ya shoma ozv yek Party hastid.');
+                return;
+            }
+            foreach($party->getMembers() as $memberUuid){
+                $this->findOnlinePlayerByUuid($memberUuid)?->sendMessage($player->getName() . ' be Party ezafe shod.');
+            }
+            $this->openPartyMenu($player);
+            return;
+        }
+        if($action === 'decline'){
+            $player->sendMessage($manager->declineInvite($uuid) ? 'Invite rad shod.' : 'Invite baraye rad kardan vojood nadarad.');
+            return;
+        }
+        if($action === 'leave'){
+            $party = $manager->getPartyFor($uuid);
+            if($party === null || !$manager->leave($uuid)){ $player->sendMessage('Shoma ozv hich Party nistid.'); return; }
+            if(!$party->isEmpty()){
+                $note = 'Party: ' . $player->getName() . ' kharej shod.';
+                foreach($party->getMembers() as $memberUuid){ $this->findOnlinePlayerByUuid($memberUuid)?->sendMessage($note); }
+            }
+            $player->sendMessage('Az Party kharej shodid.');
+            return;
+        }
+        if($action === 'kick' || $action === 'leader'){
+            $target = $this->findOnlinePlayer($targetName);
+            $targetUuid = $target?->getUniqueId()->toString() ?? '';
+            if($target === null){
+                $player->sendMessage('Bazikon online peyda nashod.');
+                return;
+            }
+            $ok = $action === 'kick'
+                ? $manager->kick($uuid, $targetUuid)
+                : $manager->transferLeadership($uuid, $targetUuid);
+            if(!$ok){
+                $player->sendMessage('Amaliyat anjam nashod. Faghat Leader mitavanad Party ra modiriat konad.');
+                return;
+            }
+            $note = $action === 'kick'
+                ? $target->getName() . ' az Party hazf shod.'
+                : $target->getName() . ' Leader jadid Party shod.';
+            if($action === 'kick'){ $target->sendMessage('Shoma az Party hazf shodid.'); }
+            foreach(($manager->getPartyFor($uuid)?->getMembers() ?? []) as $memberUuid){
+                $this->findOnlinePlayerByUuid($memberUuid)?->sendMessage($note);
+            }
+            return;
+        }
+        if($action === 'chat'){
+            $party = $manager->getPartyFor($uuid);
+            $message = trim(implode(' ', array_slice($args, 1)));
+            if($party === null || $message === '' || strlen($message) > 180 || preg_match('/[^\x20-\x7E]/', $message) === 1){
+                $player->sendMessage('Party chat: payam bayad Finglish va 1 ta 180 character bashad va shoma ozv Party bashid.');
+                return;
+            }
+            $line = '§d[Party] §f' . $player->getName() . ': ' . $message;
+            foreach($party->getMembers() as $memberUuid){ $this->findOnlinePlayerByUuid($memberUuid)?->sendMessage($line); }
+            return;
+        }
+        $this->openPartyMenu($player);
+    }
+
+    private function openPartyMenu(Player $player) : void{
+        $manager = $this->partyManager;
+        if($manager === null){ return; }
+        $manager->cleanupExpiredInvites();
+        $uuid = $player->getUniqueId()->toString();
+        $party = $manager->getPartyFor($uuid);
+        if($party === null){
+            $invite = $manager->getPendingInviteParty($uuid);
+            $content = $invite !== null
+                ? 'Shoma invite az ' . $this->getOnlinePlayerName($invite->getLeaderUuid()) . ' darid.'
+                : 'Ba doostane khod yek Party besazid ya az yek Leader invite daryaft konid.';
+            $this->sendForm($player, new ArcadeForm(
+                'Party System',
+                $content,
+                ['Create Party', 'Accept Invite', 'Decline Invite', 'Bargasht'],
+                function(Player $target, int $choice) : void{
+                    if($choice === 0){ $this->handlePartyCommand($target, ['create']); }
+                    elseif($choice === 1){ $this->handlePartyCommand($target, ['accept']); }
+                    elseif($choice === 2){ $this->handlePartyCommand($target, ['decline']); }
+                    elseif($choice === 3){ $this->openMainMenu($target); }
+                }
+            ));
+            return;
+        }
+        $lines = [];
+        foreach($party->getMembers() as $memberUuid){
+            $lines[] = ($party->isLeader($memberUuid) ? 'Leader: ' : 'Member: ') . $this->getOnlinePlayerName($memberUuid);
+        }
+        $content = 'Members: ' . $party->getMemberCount() . '/' . $party->getMaximumMembers()
+            . "\n" . implode("\n", $lines)
+            . "\nInvite: /party invite <player>"
+            . "\nChat: /party chat <message>";
+        if($party->isLeader($uuid)){
+            $content .= "\nManage: /party kick <player> | /party leader <player>";
+        }
+        $this->sendForm($player, new ArcadeForm(
+            'Party System',
+            $content,
+            ['Refresh', 'Leave Party', 'Bargasht'],
+            function(Player $target, int $choice) : void{
+                if($choice === 0){ $this->openPartyMenu($target); }
+                elseif($choice === 1){ $this->handlePartyCommand($target, ['leave']); }
+                elseif($choice === 2){ $this->openMainMenu($target); }
+            }
+        ));
+    }
+
+    private function handlePartyDisconnect(string $uuid) : void{
+        $manager = $this->partyManager;
+        $party = $manager?->getPartyFor($uuid);
+        if($manager === null || $party === null){ return; }
+        $wasLeader = $party->isLeader($uuid);
+        $manager->leave($uuid);
+        if(!$party->isEmpty()){
+            $message = $wasLeader
+                ? 'Party: Leader disconnect shod. ' . $this->getOnlinePlayerName($party->getLeaderUuid()) . ' Leader jadid ast.'
+                : 'Party: ' . $this->getOnlinePlayerName($uuid) . ' disconnect shod.';
+            foreach($party->getMembers() as $memberUuid){ $this->findOnlinePlayerByUuid($memberUuid)?->sendMessage($message); }
+        }
+    }
+
+    private function findOnlinePlayer(string $name) : ?Player{
+        if($name === '' || strlen($name) > 32){ return null; }
+        foreach($this->getServer()->getOnlinePlayers() as $player){
+            if(strcasecmp($player->getName(), $name) === 0){ return $player; }
+        }
+        return null;
+    }
+
+    private function findOnlinePlayerByUuid(string $uuid) : ?Player{
+        foreach($this->getServer()->getOnlinePlayers() as $player){
+            if($player->getUniqueId()->toString() === $uuid){ return $player; }
+        }
+        return null;
+    }
+
+    private function getOnlinePlayerName(string $uuid) : string{
+        return $this->findOnlinePlayerByUuid($uuid)?->getName() ?? ('Offline-' . substr($uuid, 0, 8));
     }
 
     private function sendForm(Player $player, ArcadeForm $form) : void{

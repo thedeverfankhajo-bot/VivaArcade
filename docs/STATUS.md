@@ -11,7 +11,8 @@ Updated: 2026-11-17
 - UUID JSON profiles with per-player locks and atomic replacement.
 - Dollar WalletService, bounded transaction ledger, duplicate protection and no-negative-balance debit checks.
 - Once-per-UTC-day Dollar/XP reward with atomic claim state and Native Bedrock form.
-- Dependency-light ArenaPool, QueueManager, MatchSession and PartyManager primitives.
+- Dependency-light ArenaPool, QueueManager and MatchSession primitives.
+- Live Party menu and `/party` command with UUID membership, expiring online invites, accept/decline, leave/disconnect cleanup, leader-only kick/transfer and Finglish group chat.
 - Parkour progression overflow checks and no-partial-write regression coverage.
 
 ## Latest verification
@@ -28,7 +29,8 @@ Updated: 2026-11-17
 
 ## Partial / not production-ready
 - No Bedrock client was connected; UI rendering, player interaction, movement timing and visual inspection remain unverified.
-- Existing queue and party code is not connected to live PMMP events, commands, forms, queues or match instances.
+- Matchmaking queue and arena primitives are not connected to live PMMP queues, countdown tasks, match instances or arena cloning/reset.
+- Party state is in-memory and is not restored after restart; party queue/private match integration is not implemented.
 - Wallet is connected to `/balance` and daily rewards only; shop, challenge and achievement payouts are not wired.
 - Main menu currently exposes implemented profile, stats, Parkour Rush, daily reward and help paths only.
 

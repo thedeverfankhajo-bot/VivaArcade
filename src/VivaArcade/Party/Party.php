@@ -43,6 +43,15 @@ final class Party{
 
     public function contains(string $uuid) : bool{ return isset($this->members[$uuid]); }
     public function isLeader(string $uuid) : bool{ return $this->leaderUuid === $uuid; }
+
+    /** Only the current leader may promote an existing member. */
+    public function transferLeadership(string $currentLeaderUuid, string $newLeaderUuid) : bool{
+        if(!$this->isLeader($currentLeaderUuid) || $currentLeaderUuid === $newLeaderUuid || !$this->contains($newLeaderUuid)){
+            return false;
+        }
+        $this->leaderUuid = $newLeaderUuid;
+        return true;
+    }
     public function getId() : string{ return $this->id; }
     public function getLeaderUuid() : string{ return $this->leaderUuid; }
     public function getMemberCount() : int{ return count($this->members); }

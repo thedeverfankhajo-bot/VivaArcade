@@ -20,7 +20,8 @@ PHP 8.1+ · Dedicated VivaArcade world · Native Bedrock Forms · UUID player pr
 - Once-per-UTC-day Dollar and XP rewards, committed atomically with a persistent daily marker and idempotent transaction ID; available through `/daily` and the native Bedrock form.
 - Parkour completion updates Dollar balance, lifetime earnings, XP, statistics and its reward ledger entry in one atomic profile transaction.
 - Lobby block break/place protection and active Parkour disconnect cleanup.
-- Dependency-light arena ownership, matchmaking queue, isolated match-session and UUID party core services.
+- Dependency-light arena ownership, matchmaking queue and isolated match-session core services.
+- Live Party menu and `/party` command: create, invite online players, accept/decline expiring invitations, list members, leave, kick, transfer leadership and private party chat.
 - Versioned, validated match snapshot codec with deterministic snapshot regression checks.
 - World export script that refuses to invent or export a missing LevelDB world.
 
@@ -28,7 +29,7 @@ PHP 8.1+ · Dedicated VivaArcade world · Native Bedrock Forms · UUID player pr
 
 The following requested systems are **not complete**: 24+ playable minigames, live matchmaking and independent arena instances, party forms/chat and party queue integration, teams/private matches, durable match recovery, shop purchase flows and cosmetic inventory, daily/weekly challenges, tournaments/events, live leaderboards, admin panel, SQLite adapter, spectator mode, full inventory/state restoration, the full decorative multi-district world finish and a reviewed migration path for completed older maps.
 
-The queue and party classes are core primitives; they are not yet wired to live commands, forms, a scheduler or PocketMine player events. The daily reward is connected to the wallet. Shop purchases and challenge/achievement reward flows are not yet connected. Do not interpret a registered core game ID as a live playable minigame.
+The matchmaking queue and arena classes remain dependency-light primitives; they are not wired to live queues, countdown tasks, match instances or PocketMine player events. Party management is connected to the Native Bedrock menu and `/party` command, including disconnect cleanup. Party state is in-memory and is cleared on disconnect or server restart. The daily reward is connected to the wallet. Shop purchases and challenge/achievement reward flows are not yet connected. Do not interpret a registered core game ID as a live playable minigame.
 
 ## Requirements
 
@@ -64,6 +65,7 @@ The code has not yet been validated on a live PocketMine server or Bedrock clien
 | /stats | View basic game statistics |
 | /balance | View Dollar balance |
 | /daily | View and claim the once-per-UTC-day reward |
+| /party | Open Party menu; supports create, invite, accept, decline, leave, kick, leader and chat |
 | /leave | Leave active Parkour Rush |
 | /spawn | Return to the VivaArcade lobby |
 
