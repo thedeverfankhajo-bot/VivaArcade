@@ -4,40 +4,63 @@ Updated: 2026-11-16
 
 ## Verified GitHub Actions build
 
-<https://github.com/thedeverfankhajo-bot/VivaArcade/actions/runs/43887719089>
+CI run: https://github.com/thedeverfankhajo-bot/VivaArcade/actions/runs/43903997476
 
-- Source commit: `9214d6436f2d2915a3c5157e906ed5fc47749a2b`
+- Source commit: `d6a8f093f082426d97cb8f16c28c6d3388d0d8be`
+- Branch: `main`
 - Workflow status: `success`
-- PHP runtime: PHP 8.1
+- PHP runtime: PocketMine PHP 8.2.30
 - Shell syntax checks: passed for `build.sh` and `scripts/export-world.sh`
-- PHP syntax checks: passed for every source and test PHP file
+- PHP syntax checks: passed for all packaged source and test PHP files
 - Core regression suite: 79 passed
-- Storage and idempotent-reward suite: 12 passed
+- Storage suite: 12 passed
+- Economy suite: 19 passed
+- Daily reward suite: 18 passed
 - Match snapshot suite: 13 passed
-- District/Finglish layout suite: 117 passed
-- Total assertions reported by the four suites: 221 passed
+- World layout suite: 137 passed
+- Total reported assertions: 278 passed
 - PHAR manifest validation: passed
-- PHAR build: passed
-- Actions artifact upload: passed (`vivaarcade-build`, artifact ID `14234614443`)
+- PHAR packaging and Actions artifact upload: passed
 
 ## Generated plugin artifact
 
-GitHub Actions uploaded the built PHAR and its checksum in the `vivaarcade-build` artifact attached to the run above.
+Actions artifact: https://github.com/thedeverfankhajo-bot/VivaArcade/actions/runs/43903997476/artifacts/14243732209
 
-SHA-256 of the generated `VivaArcade.phar`:
+SHA-256:
 
 ```text
-67986d54e522531e5134f9ba52c1a3a1f5f96e97663962720b5d4e744ab1d076  VivaArcade.phar
+cdbdbbf9165aea05b5753a2dc18dd2768133821679eb66abaa9c31ce3274a122  VivaArcade.phar
 ```
 
-The PHAR is a CI build artifact, not a binary committed under the repository's `dist/` directory.
+The PHAR was also opened independently after download; it contains `plugin.yml`, `src/Main.php` and `resources/config.yml`. Its plugin metadata declares PocketMine API 5.0.0 and plugin version 0.6.0.
+
+## Verified runtime world export
+
+World workflow: https://github.com/thedeverfankhajo-bot/VivaArcade/actions/runs/43903997245
+
+- Source commit: `d6a8f093f082426d97cb8f16c28d6c3388d0d8be`
+- PocketMine-MP: 5.44.3
+- Plugin build with the PMMP PHP runtime: passed
+- VivaArcade world layout: completed in the running server
+- Server stopped before archive/export: passed
+- `level.dat` and non-empty LevelDB `db/` entries: verified
+- ZIP integrity check: passed
+- World artifact upload: passed
+
+Actions artifact: https://github.com/thedeverfankhajo-bot/VivaArcade/actions/runs/43903997245/artifacts/14245440150
+
+SHA-256:
+
+```text
+c585b5658844cb79538e896e28fd95913d98e09ad1550f6bf52d1fa158851218  VivaArcade-World.zip
+```
 
 ## Verification boundary
 
-- The CI workflow checks PHP syntax and the dependency-light core behavior; it does not load the plugin against a running PocketMine-MP server.
-- No PocketMine-MP server startup, Bedrock client connection, native form rendering, live movement physics, real world generation, district visual inspection, or LevelDB export/import is claimed.
-- The 19-district map is a deterministic operation stream and needs runtime visual verification.
-- The dedicated world ZIP is intentionally not fabricated.
-- The 24 requested playable game modes and the full live network systems are not complete.
+- No Bedrock client was connected. Native form rendering and player interaction still need a real client session.
+- The generated world archive is a PocketMine LevelDB world ZIP. It has not been renamed to `.mcworld` and no Bedrock import is claimed.
+- The 19-district layout completed in PocketMine, but visual inspection in a Bedrock client remains outstanding.
+- The 24 requested playable modes and the full live network systems are not complete.
+- No Resource Pack is claimed or shipped.
 
-Do not treat the repository as a finished arcade network until the runtime/client and outstanding feature checks have passed.
+Do not treat the repository as a finished arcade network until the outstanding gameplay, multiplayer, client and feature checks have passed.
