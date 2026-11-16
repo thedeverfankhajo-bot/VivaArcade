@@ -1,0 +1,128 @@
+name: Build real VivaArcade LevelDB world
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'src/VivaArcade/World/**'
+      - 'src/VivaArcade/Main.php'
+      - 'plugin.yml'
+      - 'build.sh'
+      - 'scripts/export-world.sh'
+      - '.github/workflows/world-export.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  generate-world:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 25
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+
+      - name: Download official PocketMine PHP 8.2 runtime
+        run: |
+          mkdir -p "$RUNNER_TEMP/pmmp-runtime"
+          curl -fL --retry 3 https://github.com/pmmp/PHP-Binaries/releases/download/pm5-latest/PHP-8.2-Linux-x86_64-PM5.tar.gz -o "$RUNNER_TEMP/php-pmmp.tar.gz"
+          echo "000fc605878d24be3d6faa6991c0d3a39ae90a0f9ff24d9f4e4722ef823082fc  $RUNNER_TEMP/php-pmmp.tar.gz" | sha256sum -c -
+          tar -xzf "$RUNNER_TEMP/php-pmmp.tar.gz" -C "$RUNNER_TEMP/pmmp-runtime"
+          PHP_BIN="$(find "$RUNNER_TEMP/pmmp-runtime" -type f -name php -perm -u+x | head -n1)"
+          test -n "$PHP_BIN"
+          "$PHP_BIN" -v
+          echo "PMMP_PHP=$PHP_BIN" >> "$GITHUB_ENV"
+
+      - name: Build plugin with PocketMine PHP
+        run: |
+          "$PMMP_PHP" -d phar.readonly=0 -r 'foreach (["Phar","json","hash","zlib"] as $e) { if (!extension_loaded($e)) { fwrite(STDERR, "Missing extension: $e\n"); exit(1); } }'
+          chmod +x build.sh
+          PATH="$(dirname "$PMMP_PHP"):$PATH" ./build.sh
+
+      - name: Download PocketMine-MP 5.44.3
+        run: |
+          mkdir -p "$RUNNER_TEMP/pmmp-server/plugins"
+          curl -fL --retry 3 https://github.com/pmmp/PocketMine-MP/releases/download/5.44.3/PocketMine-MP.phar -o "$RUNNER_TEMP/pmmp-server/PocketMine-MP.phar"
+          cp dist/VivaArcade.phar "$RUNNER_TEMP/pmmp-server/plugins/VivaArcade.phar"
+          cat > "$RUNNER_TEMP/pmmp-server/server.properties" <<'PROPERTIES'
+          server-name=VivaArcade World Export
+          server-port=19132
+          server-ip=0.0.0.0
+          gamemode=adventure
+          difficulty=normal
+          level-name=world
+          level-type=DEFAULT
+          view-distance=6
+          auto-save=true
+          enable-query=false
+          enable-rcon=false
+          PROPERTIES
+
+      - name: Run PocketMine and wait for real world layout
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "$RUNNER_TEMP/pmmp-server"
+          "$PMMP_PHP" PocketMine-MP.phar --no-wizard > "$RUNNER_TEMP/pmmp-server.log" 2>&1 &
+          SERVER_PID=$!
+          cleanup() {
+            if kill -0 "$SERVER_PID" 2>/dev/null; then
+              kill -INT "$SERVER_PID" || true
+              wait "$SERVER_PID" || true
+            fi
+          }
+          trap cleanup EXIT
+          READY=0
+          for attempt in $(seq 1 900); do
+            if grep -q "VivaArcade world layout completed" "$RUNNER_TEMP/pmmp-server.log"; then
+              READY=1
+              break
+            fi
+            if ! kill -0 "$SERVER_PID" 2>/dev/null; then
+              cat "$RUNNER_TEMP/pmmp-server.log"
+              exit 1
+            fi
+            sleep 2
+          done
+          if [[ "$READY" != "1" ]]; then
+            tail -200 "$RUNNER_TEMP/pmmp-server.log"
+            echo "Timed out waiting for PocketMine to complete the world layout" >&2
+            exit 1
+          fi
+          echo "PocketMine reported world layout completion."
+          kill -INT "$SERVER_PID"
+          wait "$SERVER_PID" || true
+          trap - EXIT
+          grep -E "VivaArcade|LevelDB|world" "$RUNNER_TEMP/pmmp-server.log" | tail -60 || true
+          test -f worlds/VivaArcade/level.dat || { echo "Missing saved level.dat" >&2; exit 1; }
+          test -d worlds/VivaArcade/db || { echo "Missing LevelDB db directory" >&2; exit 1; }
+          test -n "$(find worlds/VivaArcade/db -type f -print -quit)" || { echo "LevelDB directory is empty" >&2; exit 1; }
+
+      - name: Export and validate the stopped PocketMine world
+        env:
+          VIVAARCADE_SERVER_STOPPED: '1'
+        run: |
+          chmod +x scripts/export-world.sh
+          ./scripts/export-world.sh "$RUNNER_TEMP/pmmp-server/worlds/VivaArcade" "$GITHUB_WORKSPACE/dist/VivaArcade-World.zip"
+          unzip -l dist/VivaArcade-World.zip | grep -E 'VivaArcade/(level.dat|db/)' | head -30
+          unzip -t dist/VivaArcade-World.zip
+          sha256sum dist/VivaArcade-World.zip > dist/VivaArcade-World.zip.sha256
+          cat dist/VivaArcade-World.zip.sha256
+
+      - name: Upload real LevelDB world ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: vivaarcade-world-leveldb
+          path: |
+            dist/VivaArcade-World.zip
+            dist/VivaArcade-World.zip.sha256
+          if-no-files-found: error
+
+      - name: Upload PocketMine diagnostic log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vivaarcade-world-build-log
+          path: ${{ runner.temp }}/pmmp-server.log
+          if-no-files-found: ignore
