@@ -4,12 +4,12 @@ This contribution adds deterministic, dependency-light state machines for matchm
 
 ## Included modules
 
-- `VivaArcade\Core\MatchSession`: server-authoritative match lifecycle (`waiting -> countdown -> running -> finished/cancelled`), UUID participant registry, server-side scores, disconnect/reconnect state and idempotent reward claims.
+- `VivaArcade\Core\MatchSession`: server-authoritative match lifecycle (`waiting -> countdown -> running -> finished/cancelled`), UUID participant registry, server-side scores, disconnect/reconnect state, idempotent reward claims and a validated version-1 JSON snapshot codec (`toArray()` / `fromArray()`).
 - `VivaArcade\Core\ArenaPool`: exclusive arena reservation with owner-scoped release. One match cannot release another match's arena.
 - `VivaArcade\Core\QueueManager`: FIFO queues, one active queue per UUID, one active match per player, configured minimum/maximum player counts and formation of multiple independent sessions while arenas are available.
-- `VivaArcade\Party\Party` and `PartyManager`: UUID membership, leader-only invites/kicks, expiring invites, membership uniqueness and deterministic leadership transfer.
+- `VivaArcade\Party\Party` and `PartyManager`: UUID membership, leader-only invites/kicks, expiring invites (including exact-deadline invalidation), membership uniqueness and deterministic leadership transfer.
 
-The classes intentionally do not retain `Player` objects. A PMMP adapter should resolve UUIDs to online players when it needs to teleport, open a form or send a message. Invoke these services on PocketMine's main thread; do not call them from async workers.
+The snapshot codec validates state, timestamps, UUID-indexed participants, scores and reward claims before restoring a session. It is a serialization boundary for a trusted storage adapter; it does not write to disk or provide crash recovery by itself. The classes intentionally do not retain `Player` objects. A PMMP adapter should resolve UUIDs to online players when it needs to teleport, open a form or send a message. Invoke these services on PocketMine's main thread; do not call them from async workers.
 
 ## Important integration boundary
 
@@ -26,4 +26,4 @@ Do not expose these classes as proof of multiplayer readiness until those adapte
 
 ## Tests
 
-Run `php tests/run.php`. The current suite passes 50 deterministic checks covering queue uniqueness, arena ownership, parallel-match isolation, score validation, disconnect/reconnect, terminal transitions, duplicate reward prevention, invite expiry, membership uniqueness and party leadership transfer.
+Run `php tests/run.php`. The current suite passes 58 deterministic checks covering queue uniqueness, arena ownership, parallel-match isolation, score validation, disconnect/reconnect, terminal transitions, duplicate reward prevention, snapshot round-trip/tamper rejection, invite expiry at the exact deadline, membership uniqueness and party leadership transfer.
