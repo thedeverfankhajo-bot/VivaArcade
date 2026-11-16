@@ -4,14 +4,15 @@
 
 PHP 8.1+ · Dedicated `VivaArcade` world · Native Bedrock Forms · UUID player profiles
 
-> **Release scope:** this integration adds a PocketMine plugin foundation, first-run dedicated-world builder, native Bedrock forms, Solo Parkour Rush and UUID-based reward persistence. Dependency-light matchmaking, party and match-snapshot services are also retained and tested. This is not yet the requested 24+ mode production arcade network.
+> **Release scope:** this integration adds a PocketMine plugin foundation, first-run incremental dedicated-world builder with 19 themed districts, native Bedrock forms, Solo Parkour Rush and UUID-based reward persistence. Dependency-light matchmaking, party and match-snapshot services are also retained and tested. This is not yet the requested 24+ mode production arcade network.
 
 ## Implemented
 
 - PocketMine-MP API 5 plugin entry point and registered player commands.
 - Dedicated `VivaArcade` world load/create through the official PocketMine WorldManager.
-- First-run plaza, decorative pylons, connector and Parkour Rush course builder.
-- Existing world data is not cleared. Existing unmarked worlds are preserved and gameplay is disabled until a reviewed migration has been completed.
+- New-world plaza, 19 compact themed districts, illuminated road grid, colored pylons/gateways and Parkour Rush course builder.
+- Incremental main-thread world construction, bounded by one chunk and 180 block writes per tick by default, with versioned completion/retry state.
+- Existing world data is not cleared. Interrupted builds are replayed idempotently; completed older layouts are preserved and require a reviewed migration before district expansion.
 - Native Bedrock JSON form for the main menu and game selector; no external FormAPI dependency.
 - Solo Parkour Rush with server-side timer, checkpoint, fall recovery, finish and server-side reward.
 - UUID-keyed JSON player profiles, per-player file locks, atomic replacement and duplicate-transaction protection.
@@ -22,7 +23,7 @@ PHP 8.1+ · Dedicated `VivaArcade` world · Native Bedrock Forms · UUID player 
 
 ## Not yet implemented / not connected to the live PMMP adapter
 
-The following requested systems are **not complete**: 24+ playable minigames, live matchmaking and independent arena instances, party forms/chat and party queue integration, teams/private matches, durable match recovery, a general-purpose economy transaction API and cosmetic shops, daily/weekly challenges, tournaments/events, live leaderboards, admin panel, SQLite adapter, spectator mode, full inventory/state restoration, and the large multi-district world design.
+The following requested systems are **not complete**: 24+ playable minigames, live matchmaking and independent arena instances, party forms/chat and party queue integration, teams/private matches, durable match recovery, a general-purpose economy transaction API and cosmetic shops, daily/weekly challenges, tournaments/events, live leaderboards, admin panel, SQLite adapter, spectator mode, full inventory/state restoration, and the full decorative multi-district world finish, in-world signs/portals, and a reviewed migration path for completed older maps.
 
 The existing queue and party classes are core primitives; they are not yet wired to live commands, forms, a scheduler or PocketMine player events. Do not interpret a registered core game ID as a live playable minigame.
 
@@ -39,7 +40,7 @@ chmod +x build.sh
 ./build.sh
 ```
 
-The build packages the repository's real `src/`, `resources/` and root `plugin.yml`; it no longer attempts to extract the damaged historical `dist/source.zip`. It runs PHP syntax checks, core regressions, UUID storage tests and match-snapshot tests, validates the PHAR manifest and writes `dist/SHA256SUMS.txt`.
+The build packages the repository's real `src/`, `resources/` and root `plugin.yml`; it no longer attempts to extract the damaged historical `dist/source.zip`. It runs PHP syntax checks, core regressions, UUID storage tests, match-snapshot tests and a 19-district/Finglish directory regression, validates the PHAR manifest and writes `dist/SHA256SUMS.txt`.
 
 ## Install
 
@@ -68,7 +69,7 @@ Other commands from the long-term specification are not registered yet.
 
 The world name is `VivaArcade` and is managed through PocketMine's official WorldManager. The first-run builder records its layout version and state in the plugin data folder (`world-layout-v1.json`).
 
-The builder populates a new world, or resumes a build explicitly marked `building`. It does not clear an existing unmarked map. Back up an existing world before a reviewed migration; do not delete the state file to force regeneration.
+The builder populates a new world or resumes a build explicitly marked `building`. It processes chunk loading and block writes in bounded scheduler batches (one chunk and 180 block writes per tick by default). It does not clear an existing map. A completed older layout is preserved and remains playable without automatic district expansion. Back up an existing world before a reviewed migration; do not delete the state file to force regeneration.
 
 ## Player data and economy
 
