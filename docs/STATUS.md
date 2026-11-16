@@ -13,6 +13,7 @@ Updated: 2026-11-17
 - Once-per-UTC-day Dollar/XP reward with atomic claim state and Native Bedrock form.
 - Dependency-light ArenaPool, QueueManager and MatchSession primitives.
 - Live Party menu and `/party` command with UUID membership, expiring online invites, accept/decline, leave/disconnect cleanup, leader-only kick/transfer and Finglish group chat.
+- Native Game Browser with truthful All, Featured, Solo and Skill filters; only the implemented Parkour Rush mode appears, with live online-player/active-run counts, configured reward details and an explicit shared-course disclosure.
 - Parkour progression overflow checks and no-partial-write regression coverage.
 
 ## Latest verification
