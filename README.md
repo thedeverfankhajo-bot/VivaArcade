@@ -27,7 +27,7 @@ PHP 8.1+ · Dedicated VivaArcade world · Native Bedrock Forms · UUID player pr
 
 ## Not yet implemented / not connected to the live PMMP adapter
 
-The following requested systems are **not complete**: 24+ playable minigames, live matchmaking and independent arena instances, party forms/chat and party queue integration, teams/private matches, durable match recovery, shop purchase flows and cosmetic inventory, daily/weekly challenges, tournaments/events, live leaderboards, admin panel, SQLite adapter, spectator mode, full inventory/state restoration, the full decorative multi-district world finish and a reviewed migration path for completed older maps.
+The following requested systems are **not complete**: 24+ playable minigames, live matchmaking and independent arena instances, party queue integration, teams/private matches, durable match recovery, shop purchase flows and cosmetic inventory, daily/weekly challenges, tournaments/events, live leaderboards, admin panel, SQLite adapter, spectator mode, full inventory/state restoration, the full decorative multi-district world finish and a reviewed migration path for completed older maps.
 
 The matchmaking queue and arena classes remain dependency-light primitives; they are not wired to live queues, countdown tasks, match instances or PocketMine player events. Party management is connected to the Native Bedrock menu and `/party` command, including disconnect cleanup. Party state is in-memory and is cleared on disconnect or server restart. The daily reward is connected to the wallet. Shop purchases and challenge/achievement reward flows are not yet connected. Do not interpret a registered core game ID as a live playable minigame.
 
@@ -53,7 +53,7 @@ The build packages the repository's real src/, resources/ and root plugin.yml; i
 3. Start PocketMine-MP. On first launch, the plugin asks PocketMine to create worlds/VivaArcade/ and populates the initial plaza and Parkour Rush course.
 4. Join with a Bedrock client and use /arcade.
 
-The code has not yet been validated on a live PocketMine server or Bedrock client. Test on a disposable PMMP 5 server before public deployment.
+The 0.7.0 source was built and launched on PocketMine-MP 5.44.3 in CI; the world builder completed and a saved LevelDB archive passed ZIP checks. No Bedrock client was connected, so form rendering, player interaction and gameplay physics still require client testing. Test on a disposable PMMP 5 server before public deployment.
 
 ## Commands currently registered
 
@@ -91,7 +91,7 @@ A LevelDB world archive can only be exported after a real PocketMine runtime has
 
     VIVAARCADE_SERVER_STOPPED=1 ./scripts/export-world.sh
 
-The script requires worlds/VivaArcade/level.dat and a non-empty worlds/VivaArcade/db/ LevelDB directory. It refuses to fabricate a world ZIP. No runtime-generated world ZIP is included with this source integration.
+The script requires worlds/VivaArcade/level.dat and a non-empty worlds/VivaArcade/db/ LevelDB directory. It refuses to fabricate a world ZIP. The source repository does not contain the generated ZIP. A real PocketMine LevelDB ZIP for commit `e334d092dd71599fd414c9e4d237afef43af16d6` is available as the GitHub Actions artifact documented in `docs/TEST-RESULTS.md`.
 
 ## Tests and verification boundary
 

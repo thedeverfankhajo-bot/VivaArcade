@@ -16,25 +16,23 @@ Updated: 2026-11-17
 - Parkour progression overflow checks and no-partial-write regression coverage.
 
 ## Latest verification
-- Latest code commit on `main`: `dd4f558d2a741ad0e28d2ada46d863d26557b1aa`.
-- CI run [#43976065690](https://github.com/thedeverfankhajo-bot/VivaArcade/actions/runs/43976065690): success.
-- PHP 8.1.34 syntax and shell syntax checks: passed.
-- Six regression suites: 286 assertions passed (core 79, storage 20, economy 19, daily 18, snapshot 13, world layout 137).
-- PHAR manifest validation, packaging and artifact upload: passed.
-- PHAR SHA-256: `621b521d59c8334aa9538ba9681615a69e7950a478f944defc22e6c1a4c9d3d7`.
-- CI artifact: [vivaarcade-build #14280029041](https://github.com/thedeverfankhajo-bot/VivaArcade/actions/runs/43976065690/artifacts/14280029041).
-- PocketMine-MP 5.44.3 world workflow [#43976065617](https://github.com/thedeverfankhajo-bot/VivaArcade/actions/runs/43976065617) passed on the same source commit. The plugin built with the official PMMP PHP runtime, the world layout completed, the server stopped cleanly, and LevelDB files plus ZIP integrity were verified.
-- World ZIP SHA-256: `9386528855c907aa84c74d8e40f9a3fedfa3a28adc144ffeed0335cd4accacf1`.
-- World artifact: [vivaarcade-world-leveldb #14280173997](https://github.com/thedeverfankhajo-bot/VivaArcade/actions/runs/43976065617/artifacts/14280173997).
+- Latest feature commit on `main`: `e334d092dd71599fd414c9e4d237afef43af16d6` (Party adapter + Bedrock menu).
+- CI run [#43977378958](https://github.com/thedeverfankhajo-bot/VivaArcade/actions/runs/43977378958): success for commit `e334d092dd71599fd414c9e4d237afef43af16d6`.
+- PHP 8.1.34 and shell syntax checks: passed. Six regression suites: 293 assertions passed (core 86, storage 20, economy 19, daily 18, snapshot 13, world layout 137).
+- PHAR manifest validation, packaging and artifact upload: passed. PHAR SHA-256: `84ed0f35a9be4c919734699d62c50cc1c9540a1a0931ad03f524dbd824dee16e`.
+- PHAR artifact: [vivaarcade-build #14280324849](https://github.com/thedeverfankhajo-bot/VivaArcade/actions/runs/43977378958/artifacts/14280324849).
+- PocketMine-MP 5.44.3 world workflow [#43977378888](https://github.com/thedeverfankhajo-bot/VivaArcade/actions/runs/43977378888): success on the same source commit; the plugin booted, the 19-district world layout completed, the server stopped cleanly, `level.dat` and non-empty LevelDB data were checked, and `unzip -t` passed.
+- World ZIP SHA-256: `f2cbd7bf1edc8ddf6748c90e000657d11cdcdd669d87bcad8acccb3cb4ef2d91`.
+- World artifact: [vivaarcade-world-leveldb #14280998558](https://github.com/thedeverfankhajo-bot/VivaArcade/actions/runs/43977378888/artifacts/14280998558).
 
 ## Partial / not production-ready
-- No Bedrock client was connected; UI rendering, player interaction, movement timing and visual inspection remain unverified.
+- No Bedrock client was connected; Native Bedrock form rendering, player interaction, movement timing and visual inspection remain unverified.
 - Matchmaking queue and arena primitives are not connected to live PMMP queues, countdown tasks, match instances or arena cloning/reset.
 - Party state is in-memory and is not restored after restart; party queue/private match integration is not implemented.
 - Wallet is connected to `/balance` and daily rewards only; shop, challenge and achievement payouts are not wired.
-- Main menu currently exposes implemented profile, stats, Parkour Rush, daily reward and help paths only.
+- Main menu currently exposes implemented profile, Party, stats, Parkour Rush, daily reward and help paths only.
 
 ## Not implemented
-24+ playable modes, isolated arena cloning/reset, live matchmaking, party invitation UI/chat/queueing, team/private matches, shop and cosmetics, challenge catalogue, tournaments, persistent leaderboards, scoreboard, achievements, admin panel, SQLite, full inventory/state restoration, full crash recovery, load testing and Resource Pack remain unimplemented.
+24+ playable modes, isolated arena cloning/reset, live matchmaking, party queueing, team/private matches, shop and cosmetics, challenge catalogue, tournaments, persistent leaderboards, scoreboard, achievements, admin panel, SQLite, full inventory/state restoration, full crash recovery, load testing and Resource Pack remain unimplemented.
 
 No Resource Pack or Bedrock `.mcworld` file is shipped. The existing generated world artifact is a PocketMine LevelDB ZIP.
