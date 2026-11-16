@@ -124,6 +124,18 @@ final class ParkourRush{
         $this->sendToSpawn($player);
     }
 
+    public function getActivePlayerCount() : int{
+        return count($this->sessions);
+    }
+
+    public function getConfiguredDollarReward() : int{
+        return $this->rewardDollar;
+    }
+
+    public function getConfiguredXpReward() : int{
+        return $this->rewardXp;
+    }
+
     private function sendToSpawn(Player $player) : void{
         $spawn = $this->world->getSpawnLocation();
         $player->teleport(new Position($spawn->x, $spawn->y, $spawn->z, $this->world));
