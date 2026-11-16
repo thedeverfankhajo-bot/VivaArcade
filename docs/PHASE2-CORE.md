@@ -6,7 +6,7 @@ This contribution adds deterministic, dependency-light state machines for matchm
 
 - `VivaArcade\Core\MatchSession`: server-authoritative match lifecycle (`waiting -> countdown -> running -> finished/cancelled`), UUID participant registry, server-side scores, connected-player checks before countdown/start, disconnect/reconnect state and idempotent reward claims.
 - `VivaArcade\Core\ArenaPool`: exclusive arena reservation with owner-scoped release. One match cannot release another match's arena.
-- `VivaArcade\Core\QueueManager`: FIFO queues, one active queue per UUID, one active match per player, configured minimum/maximum player counts, disconnect/reconnect routing, concurrent isolated sessions and bounded retention of terminal match summaries in memory.
+- `VivaArcade\Core\QueueManager`: FIFO queues, one active queue per UUID, one active match per player, configured minimum/maximum player counts, immediate removal of disconnected queued players, active-match disconnect/reconnect routing, concurrent isolated sessions and bounded retention of terminal match summaries in memory.
 - `VivaArcade\Party\Party` and `PartyManager`: UUID membership, leader-only invites/kicks/cancellation, invite decline, strict expiry at the expiry timestamp, membership uniqueness and deterministic leadership transfer.
 
 The classes intentionally do not retain `Player` objects. A PMMP adapter should resolve UUIDs to online players when it needs to teleport, open a form or send a message. Invoke these services on PocketMine's main thread; do not call them from async workers.
@@ -27,4 +27,4 @@ Do not expose these classes as proof of multiplayer readiness until those adapte
 
 ## Tests
 
-Run `php tests/run.php`. The deterministic core suite covers queue uniqueness, arena ownership, parallel-match isolation, connected-player minimum checks, disconnect/reconnect routing, terminal-session pruning, score validation, duplicate reward prevention, invite acceptance/decline/cancellation/expiry, membership uniqueness and party leadership transfer.
+Run `php tests/run.php`. The deterministic core suite covers queue uniqueness and offline queued-player cleanup, arena ownership, parallel-match isolation, connected-player minimum checks, disconnect/reconnect routing, terminal-session pruning, score validation, duplicate reward prevention, invite acceptance/decline/cancellation/expiry, membership uniqueness and party leadership transfer.

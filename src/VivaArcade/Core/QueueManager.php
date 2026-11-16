@@ -36,6 +36,7 @@ final class QueueManager{
     }
 
     public function leave(string $uuid) : bool{
+        MatchSession::assertUuid($uuid);
         $gameId = $this->playerQueue[$uuid] ?? null;
         if($gameId === null){ return false; }
         unset($this->queues[$gameId][$uuid], $this->playerQueue[$uuid]);
@@ -103,7 +104,15 @@ final class QueueManager{
         return true;
     }
 
+    /**
+     * Remove a disconnected queued player immediately, or mark an active
+     * participant disconnected so the PMMP adapter can apply its reconnect
+     * grace period. Queued UUIDs must never be matched while offline.
+     */
     public function disconnectPlayer(string $uuid) : bool{
+        if($this->leave($uuid)){
+            return true;
+        }
         $match = $this->getActiveMatchFor($uuid);
         return $match !== null && $match->disconnect($uuid);
     }

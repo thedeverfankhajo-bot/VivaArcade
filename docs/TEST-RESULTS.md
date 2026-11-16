@@ -8,7 +8,7 @@ The PR CI workflow ran on PHP **8.1.34**.
 
 - Shell syntax: `bash -n build.sh` and `bash -n scripts/export-world.sh` — **PASS**.
 - PHP syntax: `php -l` for all files in `src/` and `tests/` — **PASS**.
-- Pure-core regression tests: `php tests/run.php` — **PASS: 71 checks**.
+- Pure-core regression tests: `php tests/run.php` — **PASS: 79 checks**.
 - PHAR build: **BLOCKED / FAIL (expected integrity guard)**. `unzip -t dist/source.zip` exits with code 9 because the committed ZIP is truncated and has no central directory/end-of-central-directory record. The build script stops before packaging rather than generating an incomplete PHAR.
 
 ## Source archive integrity
@@ -24,4 +24,4 @@ The committed `dist/source.zip` is 7,501 bytes. Parsing its local ZIP headers sh
 - PMMP-integrated matchmaking, party UI/chat/queues, tournament flows, rewards integration or crash recovery.
 - Production multiplayer load/concurrency tests and server performance.
 
-No `VivaArcade.phar`, `VivaArcade-World.zip` or full package is claimed as created. The 71 passing tests exercise only the dependency-light Phase 2 PHP core services, not a running Minecraft server.
+No `VivaArcade.phar`, `VivaArcade-World.zip` or full package is claimed as created. The 79 passing tests exercise only the dependency-light Phase 2 PHP core services, not a running Minecraft server.
