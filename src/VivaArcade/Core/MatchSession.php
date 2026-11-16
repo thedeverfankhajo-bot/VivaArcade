@@ -67,13 +67,13 @@ final class MatchSession{
     }
 
     public function beginCountdown() : bool{
-        if($this->state !== self::WAITING || count($this->participants) < $this->minimumPlayers){ return false; }
+        if($this->state !== self::WAITING || $this->getConnectedPlayerCount() < $this->minimumPlayers){ return false; }
         $this->state = self::COUNTDOWN;
         return true;
     }
 
     public function start(?int $now = null) : bool{
-        if($this->state !== self::COUNTDOWN || count($this->participants) < $this->minimumPlayers){ return false; }
+        if($this->state !== self::COUNTDOWN || $this->getConnectedPlayerCount() < $this->minimumPlayers){ return false; }
         $this->state = self::RUNNING;
         $this->startedAt = $now ?? time();
         return true;
@@ -141,6 +141,15 @@ final class MatchSession{
     public function getMaximumPlayers() : int{ return $this->maximumPlayers; }
     public function getCreatedAt() : int{ return $this->createdAt; }
     public function getPlayerCount() : int{ return count($this->participants); }
+    public function getConnectedPlayerCount() : int{
+        $count = 0;
+        foreach($this->participants as $participant){
+            if($participant['connected'] && !$participant['eliminated']){ ++$count; }
+        }
+        return $count;
+    }
+    public function isParticipant(string $uuid) : bool{ return isset($this->participants[$uuid]); }
+    public function isConnected(string $uuid) : bool{ return ($this->participants[$uuid]['connected'] ?? false) === true; }
     /** @return list<string> */
     public function getParticipantUuids() : array{ return array_keys($this->participants); }
     /** @return array<string, int> */

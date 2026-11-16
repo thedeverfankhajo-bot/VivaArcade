@@ -2,32 +2,27 @@
 
 This document distinguishes shipped source, tested core logic and unverified runtime integration.
 
-## Phase 1 source bundle (`dist/source.zip`)
+## Phase 1 source bundle (`dist/source.zip`) — integrity failure
+
+The archive is **not extractable** and must not be used for deployment. It is 7,501 bytes, has no ZIP end-of-central-directory record, and ends inside the compressed payload for `src/VivaArcade/Lobby/LobbyManager.php`. Only earlier ZIP entries can be read. The earlier project notes describe the intended contents, but the committed archive does not provide the full code needed to verify or package them.
 
 | Area | Status | Notes |
 |---|---|---|
-| Plugin | Source included | PMMP API 5 manifest and PHP source bundle. |
-| Dedicated world | Runtime-generated | PMMP generates/saves the world; no prebuilt world archive is claimed. |
-| Lobby/arenas | First playable pass | Lobby, Color Rush pads, parkour and game-specific courses. |
-| Mini-games | 15 solo modes | Each has its own start, input/movement logic, timer and score in the original bundle. |
-| Profiles | Baseline | UUID-based JSON profile, XP/level, wins/games/best score, daily streak. |
-| Economy | Baseline | Locked atomic JSON writes, wallet validation, transaction ledger and cosmetic ownership. |
-| Challenges/rewards | Baseline | Daily reward plus two progress-based daily challenges. |
-| Shop | Minimal | One cosmetic: `neon-tag`. |
-| Leaderboard | Basic | Stored profile ranking through `/top`. |
-| Menus | Basic | Native Bedrock SimpleForm menu/game browser. |
-| Admin | Minimal | `/arcadeadmin give` and `reload`. |
-| Protection | Basic | Block/item/damage protection in arcade world and configurable boundary. |
-| Score display | Basic | Score tag and action bar; not a custom sidebar. |
+| Plugin | Blocked | `plugin.yml` can be inspected, but the complete main class and plugin source cannot be extracted from the damaged ZIP. |
+| Dedicated world | Not generated here | Requires running the plugin on PocketMine-MP; no saved LevelDB world archive is available. |
+| Lobby/arenas | Not verifiable | The source archive truncates in the lobby manager implementation. |
+| Mini-games | Not verifiable | Older notes describe 15 solo modes, but the complete game files are not recoverable from the archive. |
+| Profiles/economy/challenges/shop/leaderboards | Not verifiable | Earlier docs describe baseline implementations; the complete source is unavailable for review or packaging. |
+| Menus/admin/protection | Not verifiable | No runtime or Bedrock client tests are possible from the available artifact. |
 
 ## Added Phase 2 core primitives
 
 | Area | Status | Notes |
 |---|---|---|
-| Match lifecycle | Core tested | State machine, participants, score validation, disconnect/reconnect and single reward claims. |
-| Queue coordination | Core tested | FIFO queue, UUID uniqueness, minimum/maximum player limits and isolated session creation. |
+| Match lifecycle | Core tested | State machine, connected-player minimum checks before countdown/start, participant score validation, disconnect/reconnect and single reward claims. |
+| Queue coordination | Core tested | FIFO queue, UUID uniqueness, minimum/maximum player limits, explicit disconnect/reconnect routing, concurrent isolated sessions and bounded in-memory terminal history. |
 | Arena ownership | Core tested | Exclusive reservation and owner-scoped release. |
-| Party membership | Core tested | UUID membership, leader, invites, expiry, kick/leave and leadership transfer. |
+| Party membership | Core tested | UUID membership, leader, invite/decline/cancel, strict expiry, kick/leave and leadership transfer. |
 
 **Important:** These classes are not yet wired into the PMMP plugin lifecycle, `/queue` command, Bedrock UI, scheduler, mini-game gameplay adapters or persistent crash-recovery flow. They are not represented as a playable multiplayer system yet.
 
@@ -43,6 +38,14 @@ This document distinguishes shipped source, tested core logic and unverified run
 - NPCs, portal triggers, hologram service and packet-backed sidebar.
 - Full admin forms, automatic backup/restore UI and per-game arena controls.
 - Bedrock client QA, production load tests and a pre-exported LevelDB world ZIP.
+
+## Build and runtime artifacts
+
+- `dist/VivaArcade.phar`: **not produced**. CI refuses to build from the malformed source archive.
+- `dist/VivaArcade-World.zip`: **not produced**. A real LevelDB world requires a running PocketMine-MP server and clean world shutdown.
+- `dist/VivaArcade-Full-Package.zip`: **not produced** because the required PHAR and world archive do not exist.
+
+See [SOURCE-RECOVERY.md](SOURCE-RECOVERY.md) for the ZIP integrity details and recovery steps.
 
 ## Production gate
 

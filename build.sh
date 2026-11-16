@@ -10,7 +10,10 @@ command -v unzip >/dev/null || { echo "unzip is required" >&2; exit 1; }
 [[ -f "$SOURCE_ARCHIVE" ]] || { echo "Missing dist/source.zip; refusing to build an incomplete plugin" >&2; exit 1; }
 
 php -r 'foreach (["Phar", "json", "hash", "zlib"] as $ext) { if (!extension_loaded($ext)) { fwrite(STDERR, "Missing PHP extension: {$ext}\n"); exit(1); } }'
-unzip -t "$SOURCE_ARCHIVE" >/dev/null
+if ! unzip -t "$SOURCE_ARCHIVE"; then
+  echo "Invalid or truncated dist/source.zip. Restore the complete original Phase 1 source bundle before building." >&2
+  exit 1
+fi
 
 WORK="$(mktemp -d)"
 cleanup(){ rm -rf "$WORK"; }

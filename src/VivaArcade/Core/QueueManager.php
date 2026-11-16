@@ -88,6 +88,7 @@ final class QueueManager{
         foreach($match->getParticipantUuids() as $uuid){
             if(($this->activeMatchByPlayer[$uuid] ?? null) === $matchId){ unset($this->activeMatchByPlayer[$uuid]); }
         }
+        $this->pruneTerminalMatches();
         return true;
     }
 
@@ -98,7 +99,18 @@ final class QueueManager{
         foreach($match->getParticipantUuids() as $uuid){
             if(($this->activeMatchByPlayer[$uuid] ?? null) === $matchId){ unset($this->activeMatchByPlayer[$uuid]); }
         }
+        $this->pruneTerminalMatches();
         return true;
+    }
+
+    public function disconnectPlayer(string $uuid) : bool{
+        $match = $this->getActiveMatchFor($uuid);
+        return $match !== null && $match->disconnect($uuid);
+    }
+
+    public function reconnectPlayer(string $uuid) : bool{
+        $match = $this->getActiveMatchFor($uuid);
+        return $match !== null && $match->reconnect($uuid);
     }
 
     public function getActiveMatchFor(string $uuid) : ?MatchSession{
@@ -109,6 +121,29 @@ final class QueueManager{
     public function getMatch(string $matchId) : ?MatchSession{ return $this->matches[$matchId] ?? null; }
     public function getQueuedGame(string $uuid) : ?string{ return $this->playerQueue[$uuid] ?? null; }
     public function getQueueCount(string $gameId) : int{ return count($this->queues[$gameId] ?? []); }
-    /** @return array<string, MatchSession> */
+    public function getActiveMatchCount() : int{
+        $count = 0;
+        foreach($this->matches as $match){
+            if(in_array($match->getState(), [MatchSession::WAITING, MatchSession::COUNTDOWN, MatchSession::RUNNING], true)){ ++$count; }
+        }
+        return $count;
+    }
+
+    /**
+     * Keep a bounded terminal-session history for result screens and diagnostics.
+     * Active matches are never pruned by this method.
+     */
+    public function pruneTerminalMatches(int $keep = 100) : int{
+        if($keep < 0 || $keep > 10000){ throw new InvalidArgumentException('Invalid match history limit'); }
+        $terminalIds = [];
+        foreach($this->matches as $matchId => $match){
+            if(in_array($match->getState(), [MatchSession::FINISHED, MatchSession::CANCELLED], true)){ $terminalIds[] = $matchId; }
+        }
+        $removeCount = max(0, count($terminalIds) - $keep);
+        foreach(array_slice($terminalIds, 0, $removeCount) as $matchId){ unset($this->matches[$matchId]); }
+        return $removeCount;
+    }
+
+    /** @return array<string, MatchSession> Active matches plus the newest retained terminal sessions. */
     public function getMatches() : array{ return $this->matches; }
 }
