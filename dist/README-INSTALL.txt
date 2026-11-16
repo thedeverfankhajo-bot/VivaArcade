@@ -1,41 +1,43 @@
 VIVAARCADE - POCKETMINE-MP API 5
 ================================
 
-INSTALL
--------
-1. Use a PocketMine-MP 5 server and the PHP version required by that build.
-2. Copy VivaArcade.phar into plugins/.
-3. Start PMMP. The plugin creates or loads the dedicated VivaArcade world and
-   builds/saves its lobby and arena structures on first world generation.
-4. Join with Bedrock Edition and use /arcade or /games.
+CURRENT DELIVERY STATUS
+-----------------------
+INSTALLATION IS CURRENTLY BLOCKED.
 
-PLAYER COMMANDS
----------------
-/arcade      Main menu
-/games       Browse 15 solo mini-game modes
-/profile     Player profile
-/challenges  Daily challenge progress
-/rewards     Claim daily reward
-/shop        Cosmetic catalogue
-/top         Leaderboards
+The committed dist/source.zip is truncated and is not a valid ZIP archive.
+The build cannot extract the complete plugin source, and no valid
+dist/VivaArcade.phar has been produced. Do not install a placeholder or
+partial artifact.
 
-ADMIN COMMANDS
---------------
-/arcadeadmin help
-/arcadeadmin give <online-player> <amount>
-/arcadeadmin reload
-
-STATUS / LIMITATIONS
---------------------
-The PHAR build, PHP syntax tests, sanity tests and storage/economy tests ran
-locally. The build environment does not contain PocketMine-MP, so live plugin
-startup, Bedrock GUI/play tests and LevelDB world loading were NOT verified.
-No fake World ZIP is included. Run the plugin on PMMP, stop it cleanly after
-the world has saved, then export worlds/VivaArcade/.
-All 15 game modes are solo. Parties/friends, matchmaking, scheduled events,
-achievements, advanced cosmetics and a custom sidebar are not included.
-See docs/STATUS.md.
-
-BUILD FROM SOURCE
+RECOVERY REQUIRED
 -----------------
-Run ./build.sh (PHP CLI + Phar extension and phar.readonly=0 required).
+1. Restore/re-upload the complete original Phase 1 source archive at
+   dist/source.zip.
+2. Run ./build.sh and confirm all syntax tests, core tests and PHAR validation
+   pass.
+3. Install the resulting VivaArcade.phar into plugins/ on a test
+   PocketMine-MP 5 server.
+4. Verify startup, world generation/loading and every menu/game using
+   Minecraft Bedrock clients before production use.
+
+WORLD EXPORT
+------------
+No dedicated LevelDB world has been exported by this repository build.
+After a successful runtime start, save the world and stop PocketMine-MP
+cleanly, then use:
+
+VIVAARCADE_SERVER_STOPPED=1 ./scripts/export-world.sh
+
+The export script requires a real worlds/VivaArcade/level.dat and non-empty
+worlds/VivaArcade/db/ directory. It deliberately refuses to create a fake
+world archive.
+
+PHASE 2 CORE TESTS
+------------------
+The dependency-light matchmaking and party core has 71 passing CI checks.
+These classes are not yet wired into live PMMP commands, Bedrock Forms,
+scheduler/gameplay adapters or persistent match recovery.
+
+See README.md, docs/STATUS.md, docs/TEST-RESULTS.md and
+docs/SOURCE-RECOVERY.md.
