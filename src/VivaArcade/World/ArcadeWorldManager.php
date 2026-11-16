@@ -18,7 +18,7 @@ use Throwable;
 final class ArcadeWorldManager{
 
     public const WORLD_NAME = 'VivaArcade';
-    private const LAYOUT_VERSION = 2;
+    private const LAYOUT_VERSION = 3;
 
     private bool $playable = false;
 
@@ -91,7 +91,7 @@ final class ArcadeWorldManager{
         }else{
             $this->playable = $state === 'complete';
             if($this->playable && $version < self::LAYOUT_VERSION){
-                $this->plugin->getLogger()->warning('An older completed VivaArcade map was detected and preserved without automatic edits. The expanded district layout requires a reviewed migration.');
+                $this->plugin->getLogger()->warning('An older completed VivaArcade map was detected and preserved without automatic edits. The updated district entrances and spawn canopy require a reviewed migration.');
             }elseif(!$this->playable){
                 $this->plugin->getLogger()->warning('The existing VivaArcade world was preserved. No untracked blocks were changed; game layout is not marked as installed.');
             }

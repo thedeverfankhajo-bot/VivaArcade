@@ -6,7 +6,6 @@ namespace VivaArcade\World;
 
 use Generator;
 use pocketmine\block\Block;
-use pocketmine\block\utils\DyeColor;
 use pocketmine\block\VanillaBlocks;
 
 /**
@@ -52,8 +51,9 @@ final class WorldBuilder{
         yield from $this->districtRoads();
         foreach(DistrictDirectory::all() as $district){
             $color = DistrictDirectory::toDyeColor($district['color']);
-            yield from $this->district($district['x'], $district['z'], $color);
-            yield from $this->districtAccess($district['x'], $district['z'], $color);
+            $direction = DistrictDirectory::entranceDirection($district['z']);
+            yield from $this->district($district['x'], $district['z'], $color, $direction);
+            yield from $this->districtAccess($district['x'], $district['z'], $color, $direction);
         }
         yield from $this->parkourCourse();
 
@@ -112,6 +112,40 @@ final class WorldBuilder{
             yield $this->block($x, 100, $z, VanillaBlocks::SEA_LANTERN());
             yield $this->block($x, 101, $z, VanillaBlocks::GLASS());
         }
+
+        // A suspended neon canopy adds a focal point above spawn without
+        // blocking the ground-level plaza or the player's spawn position.
+        foreach([-6, 6] as $x){
+            foreach([-6, 6] as $z){
+                for($y = 104; $y <= 112; ++$y){
+                    $color = $y % 2 === 0
+                        ? \pocketmine\block\utils\DyeColor::CYAN()
+                        : \pocketmine\block\utils\DyeColor::BLUE();
+                    yield $this->block($x, $y, $z, VanillaBlocks::CONCRETE()->setColor($color));
+                }
+                yield $this->block($x, 113, $z, VanillaBlocks::GLOWSTONE());
+            }
+        }
+
+        for($offset = -6; $offset <= 6; ++$offset){
+            yield $this->block($offset, 113, -6, VanillaBlocks::SEA_LANTERN());
+            yield $this->block($offset, 113, 6, VanillaBlocks::SEA_LANTERN());
+            yield $this->block(-6, 113, $offset, VanillaBlocks::SEA_LANTERN());
+            yield $this->block(6, 113, $offset, VanillaBlocks::SEA_LANTERN());
+        }
+
+        for($x = -5; $x <= 5; ++$x){
+            for($z = -5; $z <= 5; ++$z){
+                yield $this->block($x, 112, $z, VanillaBlocks::GLASS());
+            }
+        }
+        foreach([-3, 3] as $offset){
+            for($step = -5; $step <= 5; ++$step){
+                yield $this->block($step, 112, $offset, VanillaBlocks::SEA_LANTERN());
+                yield $this->block($offset, 112, $step, VanillaBlocks::SEA_LANTERN());
+            }
+        }
+        yield $this->block(0, 112, 0, VanillaBlocks::GLOWSTONE());
     }
 
     /**
@@ -154,13 +188,12 @@ final class WorldBuilder{
     }
 
     /**
-     * Connect every district entrance to the nearest east-west lit avenue.
+     * Connect each district entrance to the nearest east-west lit avenue.
      *
      * @return Generator<int, array<string, mixed>, mixed, void>
      */
-    private function districtAccess(int $centerX, int $centerZ, DyeColor $color) : Generator{
+    private function districtAccess(int $centerX, int $centerZ, \pocketmine\block\utils\DyeColor $color, int $direction) : Generator{
         $roadZ = $centerZ < 0 ? -72 : 72;
-        $direction = $roadZ > $centerZ ? 1 : -1;
         $accent = VanillaBlocks::CONCRETE()->setColor($color);
         for($z = $centerZ + ($direction * 11); $direction > 0 ? $z <= $roadZ : $z >= $roadZ; $z += $direction){
             foreach([-1, 0, 1] as $offset){
@@ -173,7 +206,7 @@ final class WorldBuilder{
     /**
      * @return Generator<int, array<string, mixed>, mixed, void>
      */
-    private function district(int $centerX, int $centerZ, \pocketmine\block\utils\DyeColor $color) : Generator{
+    private function district(int $centerX, int $centerZ, \pocketmine\block\utils\DyeColor $color, int $entranceDirection) : Generator{
         $accent = VanillaBlocks::CONCRETE()->setColor($color);
         for($dx = -10; $dx <= 10; ++$dx){
             for($dz = -10; $dz <= 10; ++$dz){
@@ -195,13 +228,29 @@ final class WorldBuilder{
             yield $this->block($centerX + $dx, 107, $centerZ + $dz, VanillaBlocks::SEA_LANTERN());
         }
 
+        // The gateway now faces the same avenue as its illuminated approach.
+        $gateZ = $centerZ + ($entranceDirection * 8);
         foreach([-3, 3] as $dx){
-            for($y = 101; $y <= 106; ++$y){
-                yield $this->block($centerX + $dx, $y, $centerZ - 8, $accent);
+            for($y = 101; $y <= 108; ++$y){
+                yield $this->block($centerX + $dx, $y, $gateZ, $accent);
             }
         }
+        for($dx = -4; $dx <= 4; ++$dx){
+            yield $this->block($centerX + $dx, 109, $gateZ, VanillaBlocks::SEA_LANTERN());
+        }
         for($dx = -3; $dx <= 3; ++$dx){
-            yield $this->block($centerX + $dx, 107, $centerZ - 8, VanillaBlocks::SEA_LANTERN());
+            yield $this->block($centerX + $dx, 110, $gateZ, VanillaBlocks::GLASS());
+        }
+
+        // A short neon runner joins the gateway to the district's central axis.
+        for($step = 0; $step <= 8; ++$step){
+            $z = $centerZ + ($entranceDirection * $step);
+            foreach([-2, -1, 0, 1, 2] as $dx){
+                $block = abs($dx) === 2
+                    ? VanillaBlocks::SEA_LANTERN()
+                    : $accent;
+                yield $this->block($centerX + $dx, 100, $z, $block);
+            }
         }
 
         for($dx = -2; $dx <= 2; ++$dx){

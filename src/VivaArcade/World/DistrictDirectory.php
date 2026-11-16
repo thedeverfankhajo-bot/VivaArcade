@@ -46,6 +46,20 @@ final class DistrictDirectory{
     }
 
     /**
+     * Returns the direction from a district centre towards its connected lit avenue.
+     * A positive result means +Z; a negative result means -Z.
+     */
+    public static function entranceDirection(int $centerZ) : int{
+        $roadZ = $centerZ < 0 ? -72 : 72;
+        return $roadZ > $centerZ ? 1 : -1;
+    }
+
+    /** Returns the road-facing gateway centre for the standard 21x21 district pad. */
+    public static function entranceZ(int $centerZ) : int{
+        return $centerZ + (self::entranceDirection($centerZ) * 8);
+    }
+
+    /**
      * PocketMine-MP 5.44.3 DyeColor is a unit enum, not a backed enum.
      */
     public static function toDyeColor(string $key) : DyeColor{

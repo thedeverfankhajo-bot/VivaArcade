@@ -40,7 +40,8 @@ function worldCheck(bool $condition, string $message) : void{
 }
 
 $districts = DistrictDirectory::all();
-worldCheck(count($districts) === 19, 'the arcade directory contains 19 named districts');
+worldCheck(count($districts) === 19, 'the directory contains the 19 named districts');
+worldCheck(count($districts) + 1 === 20, 'the 19 named districts plus Main Spawn provide 20 arcade areas');
 
 $ids = [];
 $centers = [];
@@ -78,6 +79,14 @@ foreach($districts as $district){
     worldCheck(in_array($district['color'], $allowedColors, true), 'district color is a valid Bedrock dye color name');
     worldCheck(DistrictDirectory::toDyeColor($district['color']) === $colorCases[$district['color']], 'district color maps to its API-5 DyeColor enum case');
 
+    $roadZ = $district['z'] < 0 ? -72 : 72;
+    $direction = DistrictDirectory::entranceDirection($district['z']);
+    $entranceZ = DistrictDirectory::entranceZ($district['z']);
+    worldCheck(in_array($direction, [-1, 1], true), 'district entrance direction is one-dimensional and bounded');
+    worldCheck(($roadZ - $district['z']) * $direction > 0, 'district entrance faces its connected lit avenue');
+    worldCheck(abs($entranceZ - $district['z']) === 8, 'district gateway is placed eight blocks from its centre');
+    worldCheck(($entranceZ - $district['z']) * ($roadZ - $entranceZ) >= 0, 'gateway lies between district centre and avenue');
+
     $ids[$id] = true;
     $centers[$center] = true;
 
@@ -88,6 +97,16 @@ foreach($districts as $district){
 $spawn = DistrictDirectory::locate(0.5, 0.5);
 worldCheck($spawn !== null && $spawn['id'] === 'main-spawn-plaza', 'central spawn plaza is discoverable');
 worldCheck(DistrictDirectory::locate(400.0, 400.0) === null, 'coordinates outside the arcade return no district');
+
+$directionCases = [
+    -96 => 1,
+    -48 => -1,
+    48 => 1,
+    96 => -1
+];
+foreach($directionCases as $centerZ => $expected){
+    worldCheck(DistrictDirectory::entranceDirection($centerZ) === $expected, 'road-facing entrance direction is correct for Z=' . $centerZ);
+}
 
 $invalidColorRejected = false;
 try{
