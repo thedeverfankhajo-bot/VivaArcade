@@ -8,7 +8,6 @@ use Generator;
 use pocketmine\block\Block;
 use pocketmine\block\utils\DyeColor;
 use pocketmine\block\VanillaBlocks;
-use pocketmine\math\Vector3;
 
 /**
  * Idempotent, lazy layout for the owned VivaArcade world coordinates.
@@ -42,7 +41,7 @@ final class WorldBuilder{
         foreach([-72, -24, 24, 72] as $x){
             $this->addChunkRectangle($chunks, $x - 1, $x + 1, -120, 120);
         }
-        $this->addChunkRectangle($chunks, 108, 150, 47, 49);
+        $this->addChunkRectangle($chunks, 107, 150, 47, 49);
 
         ksort($chunks, SORT_STRING);
         foreach($chunks as [$chunkX, $chunkZ]){
@@ -144,7 +143,7 @@ final class WorldBuilder{
 
         // A separate illuminated connector joins the Parkour district without
         // crossing the existing Parkour Rush jump platforms at z=0..2.
-        for($x = 108; $x <= 150; ++$x){
+        for($x = 107; $x <= 150; ++$x){
             foreach([-1, 0, 1] as $offset){
                 $block = $offset === 0
                     ? VanillaBlocks::CONCRETE()->setColor(\pocketmine\block\utils\DyeColor::MAGENTA())
