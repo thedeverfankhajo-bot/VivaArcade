@@ -157,7 +157,7 @@ final class Main extends PluginBase implements Listener{
 
     private function openGamesMenu(Player $player) : void{
         if(!$this->worldPlayable){
-            $player->sendMessage("Game arenas are not ready for this existing world.");
+            $player->sendMessage("Arena haye bazi baraye in donya hanooz amade nistand.");
             return;
         }
         $this->sendForm($player, new ArcadeForm(

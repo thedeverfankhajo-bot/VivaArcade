@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 require_once __DIR__ . "/../src/VivaArcade/Core/MatchSession.php";
 
-use VivaArcade\\Core\\MatchSession;
+use VivaArcade\Core\MatchSession;
 
 $checks = 0;
 function snapshotCheck(bool $condition, string $message) : void{
     global $checks;
     ++$checks;
     if(!$condition){
-        fwrite(STDERR, "FAIL: {$message}\\n");
+        fwrite(STDERR, "FAIL: {$message}\n");
         exit(1);
     }
 }
@@ -38,7 +38,7 @@ $invalid["scores"] = [];
 $rejected = false;
 try{
     MatchSession::fromArray($invalid);
-}catch(\\InvalidArgumentException){
+}catch(\InvalidArgumentException){
     $rejected = true;
 }
 snapshotCheck($rejected, "snapshot rejects incomplete score indexes");
@@ -48,9 +48,9 @@ $invalidVersion["schemaVersion"] = 999;
 $rejectedVersion = false;
 try{
     MatchSession::fromArray($invalidVersion);
-}catch(\\InvalidArgumentException){
+}catch(\InvalidArgumentException){
     $rejectedVersion = true;
 }
 snapshotCheck($rejectedVersion, "snapshot rejects unknown schema versions");
 
-echo "PASS: {$checks} VivaArcade snapshot checks\\n";
+echo "PASS: {$checks} VivaArcade snapshot checks\n";
