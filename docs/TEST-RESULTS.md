@@ -34,7 +34,7 @@ The CI workflow verified the PHAR manifest and required files. Metadata declares
 
 ## Real PocketMine world artifact
 
-Previous successful world workflow: https://github.com/thedeverfankhajo-bot/VivaArcade/actions/runs/43903997245
+World workflow for source commit `dd4f558d2a741ad0e28d2ada46d863d26557b1aa`: https://github.com/thedeverfankhajo-bot/VivaArcade/actions/runs/43976065617
 
 - PocketMine-MP: 5.44.3
 - Layout completed in the running server
@@ -42,13 +42,13 @@ Previous successful world workflow: https://github.com/thedeverfankhajo-bot/Viva
 - `level.dat` and a non-empty LevelDB `db/` directory verified
 - ZIP integrity and artifact upload passed
 
-Artifact: https://github.com/thedeverfankhajo-bot/VivaArcade/actions/runs/43903997245/artifacts/14245440150
+Artifact: https://github.com/thedeverfankhajo-bot/VivaArcade/actions/runs/43976065617/artifacts/14280173997
 
 ```text
-c585b5658844cb79538e896e28fd95913d98e09ad1550f6bf52d1fa158851218  VivaArcade-World.zip
+9386528855c907aa84c74d8e40f9a3fedfa3a28adc144ffeed0335cd4accacf1  VivaArcade-World.zip
 ```
 
-A repeat export for commit `dd4f558d2a741ad0e28d2ada46d863d26557b1aa` has not completed at the time of this report. The previously verified archive is a PocketMine LevelDB ZIP, not a Bedrock `.mcworld`.
+The world was generated with PocketMine-MP 5.44.3 using the version 0.6.1 plugin, saved after a clean server shutdown, and passed LevelDB file checks plus `unzip -t`. This is a PocketMine LevelDB ZIP, not a Bedrock `.mcworld`.
 
 ## Verification boundary
 - No Bedrock client was connected; forms and actual player interactions still need client testing.

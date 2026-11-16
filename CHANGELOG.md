@@ -11,7 +11,7 @@
 - GitHub Actions CI run [#43976065690](https://github.com/thedeverfankhajo-bot/VivaArcade/actions/runs/43976065690) passed on `main`.
 - All PHP/shell syntax checks, six regression suites (286 assertions total), PHAR manifest validation and artifact upload passed.
 - Built PHAR SHA-256: `621b521d59c8334aa9538ba9681615a69e7950a478f944defc22e6c1a4c9d3d7`.
-- The repeat PocketMine world export for this revision is still running; no new world artifact is claimed until it completes.
+- PocketMine-MP 5.44.3 world build/export [#43976065617](https://github.com/thedeverfankhajo-bot/VivaArcade/actions/runs/43976065617) passed; artifact [#14280173997](https://github.com/thedeverfankhajo-bot/VivaArcade/actions/runs/43976065617/artifacts/14280173997) SHA-256: `9386528855c907aa84c74d8e40f9a3fedfa3a28adc144ffeed0335cd4accacf1`.
 
 ## 0.6.0 - 2026-11-16
 

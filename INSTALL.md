@@ -38,9 +38,9 @@ The world builder is scheduled in bounded main-thread batches (one chunk and 180
 
 ## World export
 
-A real PocketMine-MP 5.44.3 LevelDB world was generated and validated in [run #43903997245](https://github.com/thedeverfankhajo-bot/VivaArcade/actions/runs/43903997245). Download artifact [#14245440150](https://github.com/thedeverfankhajo-bot/VivaArcade/actions/runs/43903997245/artifacts/14245440150). It contains `VivaArcade/level.dat` and a non-empty `VivaArcade/db/` LevelDB directory.
+A real PocketMine-MP 5.44.3 LevelDB world was generated and validated for the 0.6.1 source in [run #43976065617](https://github.com/thedeverfankhajo-bot/VivaArcade/actions/runs/43976065617). Download artifact [#14280173997](https://github.com/thedeverfankhajo-bot/VivaArcade/actions/runs/43976065617/artifacts/14280173997). It contains `VivaArcade/level.dat` and a non-empty `VivaArcade/db/` LevelDB directory. SHA-256: `9386528855c907aa84c74d8e40f9a3fedfa3a28adc144ffeed0335cd4accacf1`.
 
-The archive is a PocketMine LevelDB ZIP, not a Bedrock `.mcworld`. A repeat export for the latest 0.6.1 source commit is running separately.
+The archive is a PocketMine LevelDB ZIP, not a Bedrock `.mcworld`. Its archive integrity and required LevelDB files were verified after PocketMine stopped cleanly.
 
 For your own server, stop PocketMine cleanly and run:
 

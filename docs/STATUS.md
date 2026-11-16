@@ -22,7 +22,9 @@ Updated: 2026-11-17
 - PHAR manifest validation, packaging and artifact upload: passed.
 - PHAR SHA-256: `621b521d59c8334aa9538ba9681615a69e7950a478f944defc22e6c1a4c9d3d7`.
 - CI artifact: [vivaarcade-build #14280029041](https://github.com/thedeverfankhajo-bot/VivaArcade/actions/runs/43976065690/artifacts/14280029041).
-- A previous PocketMine-MP 5.44.3 world export succeeded at [run #43903997245](https://github.com/thedeverfankhajo-bot/VivaArcade/actions/runs/43903997245). A repeat export for the latest code commit is still running; no second artifact is claimed yet.
+- PocketMine-MP 5.44.3 world workflow [#43976065617](https://github.com/thedeverfankhajo-bot/VivaArcade/actions/runs/43976065617) passed on the same source commit. The plugin built with the official PMMP PHP runtime, the world layout completed, the server stopped cleanly, and LevelDB files plus ZIP integrity were verified.
+- World ZIP SHA-256: `9386528855c907aa84c74d8e40f9a3fedfa3a28adc144ffeed0335cd4accacf1`.
+- World artifact: [vivaarcade-world-leveldb #14280173997](https://github.com/thedeverfankhajo-bot/VivaArcade/actions/runs/43976065617/artifacts/14280173997).
 
 ## Partial / not production-ready
 - No Bedrock client was connected; UI rendering, player interaction, movement timing and visual inspection remain unverified.
