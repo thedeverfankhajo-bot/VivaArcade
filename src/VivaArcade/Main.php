@@ -355,7 +355,6 @@ final class Main extends PluginBase implements Listener{
             }
         ));
     }
-
     private function showProfile(Player $player) : void{
         $profile = $this->storage?->getProfile($player->getUniqueId()->toString(), $player->getName());
         if($profile === null){
