@@ -35,6 +35,17 @@ check(!$pool->reserve('parkour-01', 'match-b'), 'cannot reserve an occupied aren
 check(!$pool->release('parkour-01', 'match-b'), 'foreign match cannot release arena');
 check($pool->release('parkour-01', 'match-a'), 'owner can release arena');
 
+$offlineQueues = new QueueManager();
+$offlineQueues->registerGame('offline-check', 2, 2);
+check($offlineQueues->join($players[2], 'offline-check', 900), 'player can join queue before disconnect');
+check($offlineQueues->disconnectPlayer($players[2]), 'queued disconnect is handled');
+check($offlineQueues->getQueueCount('offline-check') === 0, 'disconnected queued player is removed');
+check($offlineQueues->getQueuedGame($players[2]) === null, 'disconnected player queue index is cleared');
+check(!$offlineQueues->reconnectPlayer($players[2]), 'queued player does not reconnect into a phantom match');
+check($offlineQueues->join($players[3], 'offline-check', 901), 'online player can join after queued disconnect');
+check($offlineQueues->formMatches($pool, 902) === [], 'offline player is not included in a formed match');
+check($offlineQueues->getQueueCount('offline-check') === 1, 'only connected queue candidate remains');
+
 $queues = new QueueManager();
 $queues->registerGame('parkour-rush', 2, 2);
 $queues->join($players[0], 'parkour-rush', 1000);
