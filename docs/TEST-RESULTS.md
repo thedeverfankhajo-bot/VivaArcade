@@ -1,22 +1,21 @@
 # Test Results
 
-Executed in the local build container. These are not PocketMine-MP integration tests.
+## Executed in the available local container
 
-## Passed
+- PHP CLI version: 8.4.24.
+- PHP syntax lint for every new Phase 2 PHP file.
+- Pure-core tests: `php tests/run.php` (queue uniqueness, arena reservation ownership, match lifecycle, score validation, disconnect/reconnect, duplicate reward prevention, invite expiry, party membership and leader transfer).
+- Shell syntax validation for `build.sh` and `scripts/export-world.sh`.
 
-- PHP syntax lint across all source files.
-- Project sanity checks: API 5 manifest, required core files and 15 game-mode registrations.
-- JSON storage/economy tests: profile creation, cosmetic debit+ownership, duplicate purchase prevention, daily reward idempotence, game stat/reward update, challenge claim idempotence and insufficient-funds guard.
-- PHAR creation and archive inspection; SHA-256 signature algorithm confirmed.
-- Source ZIP integrity and SHA-256 checksum verification.
+## Not run in this container
 
-## Not run
-
+- Rebuilding the PHAR from `dist/source.zip` (the GitHub connector exposed the ZIP as base64 text, but the binary archive was not available as a local file in this container session).
 - Loading the PHAR inside a live PocketMine-MP process.
 - PMMP LevelDB world generation/load integration.
 - Bedrock client GUI and gameplay testing.
-- Full end-to-end gameplay test for all modes.
-- Multiplayer matchmaking, concurrency/load tests and crash-recovery tests.
-- Export/import testing for VivaArcade-World.zip.
+- End-to-end tests for the original 15 game modes.
+- Runtime integration of the new queue/party/session primitives with PMMP commands, forms, scheduler and game adapters.
+- Multiplayer concurrency/load tests and crash-recovery tests.
+- Export/import testing for `VivaArcade-World.zip`.
 
-The build environment has PHP CLI and Phar but no PocketMine-MP server runtime. The locally built PHAR is a real archive, but live PMMP compatibility remains unverified.
+The repository's existing docs report earlier syntax, storage/economy and PHAR tests for the Phase 1 source bundle. Those prior results are retained as repository documentation and were not independently rerun in this session. No `VivaArcade.phar` or LevelDB world export is claimed as newly built here.
