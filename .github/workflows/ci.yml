@@ -1,0 +1,66 @@
+name: VivaArcade CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - 'resources/**'
+      - 'plugin.yml'
+      - 'dist/source.zip'
+      - 'build.sh'
+      - '.github/workflows/ci.yml'
+  pull_request:
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - 'resources/**'
+      - 'plugin.yml'
+      - 'dist/source.zip'
+      - 'build.sh'
+      - '.github/workflows/ci.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  php-and-phar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          extensions: Phar, json, hash, zlib
+          coverage: none
+
+      - name: Check shell scripts
+        run: |
+          bash -n build.sh
+          bash -n scripts/export-world.sh
+
+      - name: Check Phase 2 PHP syntax
+        run: find src tests -type f -name '*.php' -print0 | xargs -0 -n1 php -l
+
+      - name: Run core tests
+        run: php tests/run.php
+
+      - name: Build and validate PHAR
+        run: |
+          chmod +x build.sh
+          ./build.sh
+
+      - name: Upload PHAR and checksums
+        uses: actions/upload-artifact@v4
+        with:
+          name: vivaarcade-build
+          path: |
+            dist/VivaArcade.phar
+            dist/SHA256SUMS.txt
+          if-no-files-found: error

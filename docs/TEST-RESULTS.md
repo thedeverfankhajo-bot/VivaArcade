@@ -4,7 +4,7 @@
 
 - PHP CLI version: 8.4.24.
 - PHP syntax lint for every new Phase 2 PHP file.
-- Pure-core tests: `php tests/run.php` (queue uniqueness, arena reservation ownership, match lifecycle, score validation, disconnect/reconnect, duplicate reward prevention, invite expiry, party membership and leader transfer).
+- Pure-core tests: `php tests/run.php` — **PASS: 50 checks**. Coverage includes queue uniqueness, arena reservation ownership, match lifecycle, active-match player locks, simultaneous disjoint matches on separate arenas, score validation, disconnect/reconnect, duplicate reward prevention, invite expiry, party membership and leader transfer.
 - Shell syntax validation for `build.sh` and `scripts/export-world.sh`.
 
 ## Not run in this container

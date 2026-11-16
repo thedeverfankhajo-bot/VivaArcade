@@ -12,10 +12,10 @@ The existing `dist/source.zip` is the authoritative Phase 1 source bundle and is
 This repository also contains dependency-light Phase 2 core primitives:
 
 - isolated match state machine with server-owned participant and score state;
-- FIFO queue coordinator with one-queue-per-UUID protection;
+- FIFO queue coordinator with one-queue-per-UUID and one-active-match-per-player protection;
 - exclusive arena reservation and owner-scoped release;
 - UUID-based party membership with expiring invites and leader management;
-- deterministic tests for those state machines.
+- 50 deterministic core checks, including simultaneous isolated match sessions.
 
 These Phase 2 classes are not yet connected to live PMMP commands, forms, scheduler, game adapters or persistent crash recovery. See [docs/PHASE2-CORE.md](docs/PHASE2-CORE.md) and [docs/STATUS.md](docs/STATUS.md).
 
