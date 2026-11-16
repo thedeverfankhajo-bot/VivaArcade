@@ -33,6 +33,9 @@ php "$ROOT/tests/storage.php"
 echo "Running match snapshot codec tests..."
 php "$ROOT/tests/snapshot.php"
 
+echo "Running district directory and Finglish layout tests..."
+php "$ROOT/tests/world-layout.php"
+
 echo "Building PHAR..."
 rm -f "$OUTPUT"
 php -d phar.readonly=0 -r '
