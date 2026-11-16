@@ -74,6 +74,21 @@ unset($invalidSnapshot['scores'][$players[0]]);
 $snapshotRejected = false;
 try{ MatchSession::fromArray($invalidSnapshot); }catch(InvalidArgumentException){ $snapshotRejected = true; }
 check($snapshotRejected, 'match snapshot rejects incomplete score indexes');
+$pendingSnapshotSource = new MatchSession('snapshot-waiting', 'parkour-rush', 'snapshot-arena', 1, 2, 1000);
+$pendingSnapshotSource->join($players[2], 1001);
+$pendingSnapshot = $pendingSnapshotSource->toArray();
+$pendingSnapshot['rewardClaims'] = [$players[2] . ':premature'];
+$prematureClaimRejected = false;
+try{ MatchSession::fromArray($pendingSnapshot); }catch(InvalidArgumentException){ $prematureClaimRejected = true; }
+check($prematureClaimRejected, 'match snapshot rejects reward claims before finish');
+$runningSnapshotSource = new MatchSession('snapshot-running', 'parkour-rush', 'snapshot-arena-2', 2, 2, 1000);
+$runningSnapshotSource->join($players[3], 1001);
+$runningSnapshot = $runningSnapshotSource->toArray();
+$runningSnapshot['state'] = MatchSession::RUNNING;
+$runningSnapshot['startedAt'] = 1010;
+$insufficientSnapshotRejected = false;
+try{ MatchSession::fromArray($runningSnapshot); }catch(InvalidArgumentException){ $insufficientSnapshotRejected = true; }
+check($insufficientSnapshotRejected, 'running snapshot rejects participant count below configured minimum');
 check(!$queues->finishMatch($match->getId(), $pool, 1060), 'match cannot finish twice');
 
 $parallelQueues = new QueueManager();
