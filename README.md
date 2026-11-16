@@ -3,7 +3,7 @@
 **Native Minecraft Bedrock arcade plugin for PocketMine-MP API 5**  
 PHP 8.1+ · dedicated `VivaArcade` world · Finglish player-facing UI
 
-> **Delivery status: Phase 2 core safeguards are implemented and verified by CI (71 checks). The Phase 1 source archive is truncated, so a complete production plugin and PHAR cannot currently be reconstructed. This is not the requested complete arcade network.**
+> **Delivery status: Phase 2 core safeguards are implemented and verified by CI (79 checks). The Phase 1 source archive is truncated, so a complete production plugin and PHAR cannot currently be reconstructed. This is not the requested complete arcade network.**
 
 ## Current project contents
 
@@ -12,11 +12,11 @@ PHP 8.1+ · dedicated `VivaArcade` world · Finglish player-facing UI
 This repository also contains dependency-light Phase 2 core primitives:
 
 - isolated match state machine with server-owned participant and score state;
-- FIFO queue coordinator with one-queue-per-UUID and one-active-match-per-player protection;
+- FIFO queue coordinator with one-queue-per-UUID and one-active-match-per-player protection, including immediate cleanup when queued players disconnect;
 - exclusive arena reservation and owner-scoped release;
 - connected-player minimum checks before match countdown/start, disconnect/reconnect routing and bounded terminal match history;
 - UUID-based party membership with invite acceptance, decline/cancellation, strict expiry and leader management;
-- 71 deterministic core checks, including connected-player minimums, invite expiry and simultaneous isolated match sessions.
+- 79 deterministic core checks, including disconnected-queue cleanup, connected-player minimums, invite expiry and simultaneous isolated match sessions.
 
 These Phase 2 classes remain dependency-light core services and are not yet connected to live PMMP commands, forms, scheduler, game adapters, persistent match recovery or in-game party delivery/chat. The new safeguards are covered by deterministic core regressions, but they do not constitute a playable multiplayer network. See [docs/PHASE2-CORE.md](docs/PHASE2-CORE.md) and [docs/STATUS.md](docs/STATUS.md).
 
