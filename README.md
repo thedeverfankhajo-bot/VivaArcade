@@ -10,7 +10,7 @@ PHP 8.1+ · Dedicated VivaArcade world · Native Bedrock Forms · UUID player pr
 
 - PocketMine-MP API 5 plugin entry point and registered player commands.
 - Dedicated VivaArcade world load/create through the official PocketMine WorldManager.
-- New-world plaza, 19 compact themed districts, illuminated road grid, colored pylons/gateways and Parkour Rush course builder.
+- New-world plaza with 19 named districts plus the Main Spawn Plaza (20 mapped areas), illuminated roads, road-facing gateways, neon pylons, a raised Spawn canopy and the Parkour Rush course.
 - Incremental main-thread world construction, bounded by one chunk and 180 block writes per tick by default, with versioned completion/retry state.
 - Existing world data is not cleared. Interrupted builds are replayed idempotently; completed older layouts are preserved and require a reviewed migration.
 - Native Bedrock JSON forms for the main menu and game selector; no external FormAPI dependency.
@@ -44,7 +44,7 @@ Run from the repository root:
     chmod +x build.sh
     ./build.sh
 
-The build packages the repository's real src/, resources/ and root plugin.yml; it does not attempt to extract the damaged historical dist/source.zip. It runs PHP syntax checks, core regressions, UUID storage tests, wallet ledger tests, daily reward tests, match-snapshot tests and a 19-district/Finglish directory regression, validates the PHAR manifest and writes dist/SHA256SUMS.txt.
+The build packages the repository's real src/, resources/ and root plugin.yml; it does not attempt to extract the damaged historical dist/source.zip. It runs PHP syntax checks, core regressions, UUID storage tests, wallet ledger tests, daily reward tests, match-snapshot tests and a 20-area/Finglish directory and gateway-orientation regression, validates the PHAR manifest and writes dist/SHA256SUMS.txt.
 
 ## Install
 
@@ -53,7 +53,7 @@ The build packages the repository's real src/, resources/ and root plugin.yml; i
 3. Start PocketMine-MP. On first launch, the plugin asks PocketMine to create worlds/VivaArcade/ and populates the initial plaza and Parkour Rush course.
 4. Join with a Bedrock client and use /arcade.
 
-The 0.7.0 source was built and launched on PocketMine-MP 5.44.3 in CI; the world builder completed and a saved LevelDB archive passed ZIP checks. No Bedrock client was connected, so form rendering, player interaction and gameplay physics still require client testing. Test on a disposable PMMP 5 server before public deployment.
+The current main source (commit 7b3e366596980ac07e13ba5c44105b609e4f8a4e) passed PHP CI run #43981599070: PHP 8.1.34 syntax checks, six regression suites (374 assertions), PHAR manifest validation and artifact upload. World workflow #43981599175 booted PocketMine-MP 5.44.3, completed the layout, stopped the server cleanly and exported a ZIP whose LevelDB contents and ZIP integrity were checked. No Bedrock client was connected; forms, interaction, movement physics and visual appearance still need client testing. See docs/TEST-RESULTS.md for checksums and artifact links.
 
 ## Commands currently registered
 
@@ -91,13 +91,13 @@ A LevelDB world archive can only be exported after a real PocketMine runtime has
 
     VIVAARCADE_SERVER_STOPPED=1 ./scripts/export-world.sh
 
-The script requires worlds/VivaArcade/level.dat and a non-empty worlds/VivaArcade/db/ LevelDB directory. It refuses to fabricate a world ZIP. The source repository does not contain the generated ZIP. A real PocketMine LevelDB ZIP for commit `e334d092dd71599fd414c9e4d237afef43af16d6` is available as the GitHub Actions artifact documented in `docs/TEST-RESULTS.md`.
+The script requires worlds/VivaArcade/level.dat and a non-empty worlds/VivaArcade/db/ LevelDB directory. It refuses to fabricate a world ZIP. The source repository does not contain the generated ZIP. A real PocketMine LevelDB ZIP for commit `7b3e366596980ac07e13ba5c44105b609e4f8a4e` is available as the GitHub Actions artifact documented in `docs/TEST-RESULTS.md`.
 
 ## Tests and verification boundary
 
 Run php tests/run.php, php tests/storage.php, php tests/economy.php, php tests/daily.php, php tests/snapshot.php and php tests/world-layout.php, or use ./build.sh.
 
-These tests cover dependency-light match/queue/party services, UUID player data, reward persistence, Dollar ledger operations and the district directory. They do not simulate PocketMine startup, LevelDB, Bedrock forms, in-world movement physics, or client rendering. See docs/STATUS.md, docs/TEST-RESULTS.md and docs/TESTING.md.
+These tests cover dependency-light match/queue/party services, UUID player data, reward persistence, Dollar ledger operations, district registration and road-facing gateway coordinates. The separate world workflow verifies PocketMine startup, layout completion and LevelDB ZIP export. Neither workflow connects a Bedrock client, so form rendering, movement physics and client rendering remain unverified. See docs/STATUS.md, docs/TEST-RESULTS.md and docs/TESTING.md.
 
 
 ## Daily reward

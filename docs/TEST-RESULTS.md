@@ -1,5 +1,57 @@
 # VivaArcade test results
 
+## Current main verification - world layout update
+
+Commit: https://github.com/thedeverfankhajo-bot/VivaArcade/commit/7b3e366596980ac07e13ba5c44105b609e4f8a4e
+
+### PHP and PHAR CI
+
+Run: https://github.com/thedeverfankhajo-bot/VivaArcade/actions/runs/43981599070
+
+- Branch: main; status: success
+- PHP runtime: 8.1.34
+- Shell syntax checks: passed
+- PHP syntax checks: passed for all source and test files
+- Core: 86 passed
+- Storage: 20 passed
+- Economy: 19 passed
+- Daily reward: 18 passed
+- Match snapshot: 13 passed
+- World layout: 218 passed
+- Total: 374 assertions passed
+- PHAR manifest validation, packaging and artifact upload: passed
+- Non-fatal warning: tests/economy.php imports global InvalidArgumentException with a no-effect use statement.
+
+### Plugin artifact
+
+Artifact: https://github.com/thedeverfankhajo-bot/VivaArcade/actions/runs/43981599070/artifacts/14283173555
+
+```text
+8428f40ee07f898a7e795f5cc6e947f5a8423dc0956fc4f7ae9ff76c371d303c  VivaArcade.phar
+```
+
+The workflow validates the PHAR manifest and required files. Plugin metadata continues to declare PocketMine API 5.0.0.
+
+### Real PocketMine world artifact
+
+World workflow: https://github.com/thedeverfankhajo-bot/VivaArcade/actions/runs/43981599175
+
+- PocketMine-MP: 5.44.3
+- Official PocketMine PHP runtime used to build the plugin.
+- Plugin booted in PocketMine; the world builder reported layout completion.
+- Server stopped cleanly before export.
+- level.dat, a non-empty LevelDB db/ directory and CURRENT, LOCK, LOG and MANIFEST files were present.
+- ZIP integrity check passed.
+
+Artifact: https://github.com/thedeverfankhajo-bot/VivaArcade/actions/runs/43981599175/artifacts/14281779262
+
+```text
+f6de82a73a4217378409a8b11b8e0dbe016a4aa9220d0223063d4dd02ec76caa  VivaArcade-World.zip
+```
+
+This is a PocketMine LevelDB ZIP, not a Bedrock .mcworld.
+
+## Earlier verification history
 Updated: 2026-11-17
 
 ## CI build for 0.7.0

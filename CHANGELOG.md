@@ -1,5 +1,17 @@
 # Changelog
 
+## Unreleased - main after 0.7.0
+
+### World layout
+- Corrected district gateway orientation so each entrance faces its connected illuminated avenue.
+- Added road-facing neon gateway frames and a short illuminated entrance runner.
+- Enriched the Main Spawn Plaza with a raised glass-and-light canopy and cyan/blue structural accents.
+- Bumped the layout marker to version 3 while preserving completed older maps; no automatic destructive migration is performed.
+
+### Verification
+- Commit: https://github.com/thedeverfankhajo-bot/VivaArcade/commit/7b3e366596980ac07e13ba5c44105b609e4f8a4e
+- PHP CI #43981599070 passed: six suites, 374 assertions, syntax checks, PHAR manifest validation and artifact upload.
+- PocketMine-MP 5.44.3 world build/export #43981599175 passed. Exact artifacts and checksums are in docs/TEST-RESULTS.md.
 ## 0.7.0 - 2026-11-17
 
 ### Added

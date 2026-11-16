@@ -5,8 +5,8 @@ Updated: 2026-11-17
 ## Delivered in source
 - PocketMine-MP API 5 plugin entry point, player commands and Native Bedrock forms.
 - Dedicated VivaArcade world creation/loading through PocketMine WorldManager.
-- New-world layout v2 with 19 themed districts, a Main Spawn Plaza, lit avenues, color pylons and gateways.
-- Deterministic incremental builder (one chunk and 180 block writes per tick by default), resumable build marker and preservation of completed older worlds.
+- New-world layout v3 with 19 named districts plus Main Spawn (20 mapped areas), lit avenues, road-facing gateways and a raised neon Spawn canopy.
+- Deterministic incremental builder (one chunk and 180 block writes per tick by default), resumable version-3 marker and preservation of completed older worlds; completed pre-v3 layouts are not auto-migrated.
 - Solo Parkour Rush with server-side timer, checkpoint, fall recovery, finish and unique reward transaction ID.
 - UUID JSON profiles with per-player locks and atomic replacement.
 - Dollar WalletService, bounded transaction ledger, duplicate protection and no-negative-balance debit checks.
@@ -16,14 +16,15 @@ Updated: 2026-11-17
 - Parkour progression overflow checks and no-partial-write regression coverage.
 
 ## Latest verification
-- Latest feature commit on `main`: `e334d092dd71599fd414c9e4d237afef43af16d6` (Party adapter + Bedrock menu).
-- CI run [#43977378958](https://github.com/thedeverfankhajo-bot/VivaArcade/actions/runs/43977378958): success for commit `e334d092dd71599fd414c9e4d237afef43af16d6`.
-- PHP 8.1.34 and shell syntax checks: passed. Six regression suites: 293 assertions passed (core 86, storage 20, economy 19, daily 18, snapshot 13, world layout 137).
-- PHAR manifest validation, packaging and artifact upload: passed. PHAR SHA-256: `84ed0f35a9be4c919734699d62c50cc1c9540a1a0931ad03f524dbd824dee16e`.
-- PHAR artifact: [vivaarcade-build #14280324849](https://github.com/thedeverfankhajo-bot/VivaArcade/actions/runs/43977378958/artifacts/14280324849).
-- PocketMine-MP 5.44.3 world workflow [#43977378888](https://github.com/thedeverfankhajo-bot/VivaArcade/actions/runs/43977378888): success on the same source commit; the plugin booted, the 19-district world layout completed, the server stopped cleanly, `level.dat` and non-empty LevelDB data were checked, and `unzip -t` passed.
-- World ZIP SHA-256: `f2cbd7bf1edc8ddf6748c90e000657d11cdcdd669d87bcad8acccb3cb4ef2d91`.
-- World artifact: [vivaarcade-world-leveldb #14280998558](https://github.com/thedeverfankhajo-bot/VivaArcade/actions/runs/43977378888/artifacts/14280998558).
+- Current feature commit on main: 7b3e366596980ac07e13ba5c44105b609e4f8a4e (district gateway alignment and Spawn canopy).
+- PHP CI #43981599070 passed on this commit; PHP 8.1.34 and shell/PHP syntax checks passed.
+- Six regression suites: 374 assertions passed (core 86, storage 20, economy 19, daily 18, snapshot 13, world layout 218).
+- PHAR manifest validation, packaging and artifact upload passed. SHA-256: 8428f40ee07f898a7e795f5cc6e947f5a8423dc0956fc4f7ae9ff76c371d303c.
+- PHAR artifact: https://github.com/thedeverfankhajo-bot/VivaArcade/actions/runs/43981599070/artifacts/14283173555
+- PocketMine-MP 5.44.3 world workflow #43981599175 passed on the same commit; plugin booted, layout completed, server stopped cleanly, LevelDB files were verified and unzip -t passed.
+- World ZIP SHA-256: f6de82a73a4217378409a8b11b8e0dbe016a4aa9220d0223063d4dd02ec76caa.
+- World artifact: https://github.com/thedeverfankhajo-bot/VivaArcade/actions/runs/43981599175/artifacts/14281779262
+- Non-fatal warning remains in tests/economy.php: importing global InvalidArgumentException with a use statement has no effect; tests pass.
 
 ## Partial / not production-ready
 - No Bedrock client was connected; Native Bedrock form rendering, player interaction, movement timing and visual inspection remain unverified.
@@ -35,4 +36,4 @@ Updated: 2026-11-17
 ## Not implemented
 24+ playable modes, isolated arena cloning/reset, live matchmaking, party queueing, team/private matches, shop and cosmetics, challenge catalogue, tournaments, persistent leaderboards, scoreboard, achievements, admin panel, SQLite, full inventory/state restoration, full crash recovery, load testing and Resource Pack remain unimplemented.
 
-No Resource Pack or Bedrock `.mcworld` file is shipped. The existing generated world artifact is a PocketMine LevelDB ZIP.
+No Resource Pack or Bedrock `.mcworld` file is shipped. The current generated world artifact is a PocketMine LevelDB ZIP, not a Bedrock-import-tested package.
