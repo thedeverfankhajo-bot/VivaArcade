@@ -14,16 +14,14 @@ final class PartyManager{
     private array $invites = [];
 
     public function __construct(private readonly int $maximumMembers = 8, private readonly int $inviteTtlSeconds = 60){
-        if($maximumMembers < 2 || $maximumMembers > 32 || $inviteTtlSeconds < 5 || $inviteTtlSeconds > 3600){
-            throw new \InvalidArgumentException('Invalid party manager limits');
-        }
+        if($maximumMembers < 2 || $maximumMembers > 32 || $inviteTtlSeconds < 5 || $inviteTtlSeconds > 3600){ throw new \InvalidArgumentException('Invalid party manager limits'); }
     }
 
     public function create(string $leaderUuid, ?int $now = null) : ?Party{
         Party::assertUuid($leaderUuid);
         if(isset($this->membership[$leaderUuid])){ return null; }
         $id = bin2hex(random_bytes(12));
-        $party = new Party($id, $leaderUuid, $this->maximumMembers);
+        $party = new Party($id, $leaderUuid, $this->maximumMembers, $now);
         $this->parties[$id] = $party;
         $this->membership[$leaderUuid] = $id;
         return $party;
@@ -33,9 +31,7 @@ final class PartyManager{
         Party::assertUuid($leaderUuid);
         Party::assertUuid($targetUuid);
         $party = $this->getPartyFor($leaderUuid);
-        if($party === null || !$party->isLeader($leaderUuid) || $party->contains($targetUuid) || isset($this->membership[$targetUuid]) || $party->getMemberCount() >= $party->getMaximumMembers()){
-            return false;
-        }
+        if($party === null || !$party->isLeader($leaderUuid) || $party->contains($targetUuid) || isset($this->membership[$targetUuid]) || $party->getMemberCount() >= $party->getMaximumMembers()){ return false; }
         $timestamp = $now ?? time();
         $this->invites[$targetUuid] = ['partyId' => $party->getId(), 'expiresAt' => $timestamp + $this->inviteTtlSeconds];
         return true;
@@ -69,9 +65,7 @@ final class PartyManager{
         Party::assertUuid($leaderUuid);
         Party::assertUuid($targetUuid);
         $party = $this->getPartyFor($leaderUuid);
-        if($party === null || !$party->isLeader($leaderUuid) || $leaderUuid === $targetUuid || !$party->contains($targetUuid)){
-            return false;
-        }
+        if($party === null || !$party->isLeader($leaderUuid) || $leaderUuid === $targetUuid || !$party->contains($targetUuid)){ return false; }
         unset($this->membership[$targetUuid]);
         return $party->removeMember($targetUuid);
     }

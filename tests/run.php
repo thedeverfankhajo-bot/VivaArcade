@@ -17,10 +17,7 @@ $checks = 0;
 function check(bool $condition, string $message) : void{
     global $checks;
     ++$checks;
-    if(!$condition){
-        fwrite(STDERR, "FAIL: {$message}\n");
-        exit(1);
-    }
+    if(!$condition){ fwrite(STDERR, "FAIL: {$message}\n"); exit(1); }
 }
 
 $players = [
@@ -50,6 +47,8 @@ $match = $matches[0];
 check($match->getState() === MatchSession::COUNTDOWN, 'match enters countdown');
 check($match->getPlayerCount() === 2, 'match has expected players');
 check($pool->ownerOf($match->getArenaId()) === $match->getId(), 'arena is bound to exact match');
+check($queues->getActiveMatchFor($players[0]) === $match, 'participant indexed to active match');
+check(!$queues->join($players[0], 'parkour-rush', 1004), 'active participant cannot enter another queue');
 check($queues->startMatch($match->getId(), 1010), 'match starts');
 check($match->addScore($players[0], 25), 'participant can score while running');
 check(!$match->addScore($players[2], 25), 'non-participant cannot score');
@@ -59,10 +58,24 @@ check(!$match->addScore($players[1], 1), 'disconnected participant cannot score'
 check($match->reconnect($players[1]), 'participant can reconnect');
 check($queues->finishMatch($match->getId(), $pool, 1050), 'match finishes');
 check($pool->ownerOf($match->getArenaId()) === null, 'arena is released on match finish');
+check($queues->getActiveMatchFor($players[0]) === null, 'active match index is cleared on finish');
+check($queues->join($players[0], 'parkour-rush', 1051), 'participant may queue again after match ends');
+check($queues->leave($players[0]), 'requeued participant can leave queue');
 check($match->claimReward($players[0], 'match-complete'), 'finished participant can claim');
 check(!$match->claimReward($players[0], 'match-complete'), 'reward claim is idempotent');
 check(!$match->claimReward($players[2], 'match-complete'), 'non-participant cannot claim');
 check(!$queues->finishMatch($match->getId(), $pool, 1060), 'match cannot finish twice');
+
+$parallelQueues = new QueueManager();
+$parallelQueues->registerGame('reaction-test', 2, 2);
+foreach($players as $index => $uuid){ $parallelQueues->join($uuid, 'reaction-test', 3000 + $index); }
+$parallelMatches = $parallelQueues->formMatches($pool, 3004);
+check(count($parallelMatches) === 2, 'two arena instances can form concurrent matches');
+check($parallelMatches[0]->getArenaId() !== $parallelMatches[1]->getArenaId(), 'concurrent matches use distinct arenas');
+check(array_intersect($parallelMatches[0]->getParticipantUuids(), $parallelMatches[1]->getParticipantUuids()) === [], 'concurrent matches have disjoint players');
+check(!$parallelQueues->join($players[0], 'reaction-test', 3005), 'active participant cannot be queued twice across sessions');
+check($parallelQueues->cancelMatch($parallelMatches[0]->getId(), $pool), 'first concurrent match can be cancelled');
+check($parallelQueues->cancelMatch($parallelMatches[1]->getId(), $pool), 'second concurrent match can be cancelled');
 
 $parties = new PartyManager(4, 30);
 $party = $parties->create($players[0], 2000);
@@ -83,11 +96,7 @@ check($parties->kick($players[1], $players[2]), 'leader can kick a member');
 check($parties->getPartyFor($players[2]) === null, 'kicked member is removed from index');
 
 $invalidUuidRejected = false;
-try{
-    MatchSession::assertUuid('not-a-uuid');
-}catch(InvalidArgumentException){
-    $invalidUuidRejected = true;
-}
+try{ MatchSession::assertUuid('not-a-uuid'); }catch(InvalidArgumentException){ $invalidUuidRejected = true; }
 check($invalidUuidRejected, 'invalid UUID is rejected');
 
 echo "PASS: {$checks} VivaArcade core checks\n";

@@ -6,10 +6,7 @@ namespace VivaArcade\Core;
 
 use InvalidArgumentException;
 
-/**
- * FIFO matchmaking coordinator. A PocketMine adapter is responsible for
- * teleporting players, scheduling countdowns and dispatching game adapters.
- */
+/** FIFO matchmaking coordinator with player-to-active-match ownership. */
 final class QueueManager{
     /** @var array<string, array{min:int,max:int}> */
     private array $gameRules = [];
@@ -19,6 +16,8 @@ final class QueueManager{
     private array $playerQueue = [];
     /** @var array<string, MatchSession> match id => session */
     private array $matches = [];
+    /** @var array<string, string> uuid => active match id */
+    private array $activeMatchByPlayer = [];
 
     public function registerGame(string $gameId, int $minimumPlayers, int $maximumPlayers) : void{
         if($gameId === '' || strlen($gameId) > 64 || !preg_match('/^[a-zA-Z0-9_.:-]+$/', $gameId) || $minimumPlayers < 1 || $maximumPlayers < $minimumPlayers){
@@ -30,7 +29,7 @@ final class QueueManager{
 
     public function join(string $uuid, string $gameId, ?int $now = null) : bool{
         MatchSession::assertUuid($uuid);
-        if(!isset($this->gameRules[$gameId]) || isset($this->playerQueue[$uuid])){ return false; }
+        if(!isset($this->gameRules[$gameId]) || isset($this->playerQueue[$uuid]) || isset($this->activeMatchByPlayer[$uuid])){ return false; }
         $this->queues[$gameId][$uuid] = $now ?? time();
         $this->playerQueue[$uuid] = $gameId;
         return true;
@@ -68,6 +67,7 @@ final class QueueManager{
                 }
                 foreach($candidateUuids as $uuid){
                     unset($this->queues[$gameId][$uuid], $this->playerQueue[$uuid]);
+                    $this->activeMatchByPlayer[$uuid] = $matchId;
                 }
                 $this->matches[$matchId] = $session;
                 $formed[] = $session;
@@ -85,6 +85,9 @@ final class QueueManager{
         $match = $this->matches[$matchId] ?? null;
         if($match === null || !$match->finish($now)){ return false; }
         $arenas->release($match->getArenaId(), $matchId);
+        foreach($match->getParticipantUuids() as $uuid){
+            if(($this->activeMatchByPlayer[$uuid] ?? null) === $matchId){ unset($this->activeMatchByPlayer[$uuid]); }
+        }
         return true;
     }
 
@@ -92,7 +95,15 @@ final class QueueManager{
         $match = $this->matches[$matchId] ?? null;
         if($match === null || !$match->cancel()){ return false; }
         $arenas->release($match->getArenaId(), $matchId);
+        foreach($match->getParticipantUuids() as $uuid){
+            if(($this->activeMatchByPlayer[$uuid] ?? null) === $matchId){ unset($this->activeMatchByPlayer[$uuid]); }
+        }
         return true;
+    }
+
+    public function getActiveMatchFor(string $uuid) : ?MatchSession{
+        $matchId = $this->activeMatchByPlayer[$uuid] ?? null;
+        return $matchId === null ? null : ($this->matches[$matchId] ?? null);
     }
 
     public function getMatch(string $matchId) : ?MatchSession{ return $this->matches[$matchId] ?? null; }

@@ -13,11 +13,12 @@ final class Party{
     public function __construct(
         private readonly string $id,
         private string $leaderUuid,
-        private readonly int $maximumMembers = 8
+        private readonly int $maximumMembers = 8,
+        ?int $leaderJoinedAt = null
     ){
         if($id === '' || $maximumMembers < 2){ throw new InvalidArgumentException('Invalid party configuration'); }
         self::assertUuid($leaderUuid);
-        $this->members[$leaderUuid] = time();
+        $this->members[$leaderUuid] = $leaderJoinedAt ?? time();
     }
 
     public static function assertUuid(string $uuid) : void{
@@ -36,9 +37,7 @@ final class Party{
     public function removeMember(string $uuid) : bool{
         if(!isset($this->members[$uuid])){ return false; }
         unset($this->members[$uuid]);
-        if($uuid === $this->leaderUuid && $this->members !== []){
-            $this->leaderUuid = (string) array_key_first($this->members);
-        }
+        if($uuid === $this->leaderUuid && $this->members !== []){ $this->leaderUuid = (string) array_key_first($this->members); }
         return true;
     }
 
