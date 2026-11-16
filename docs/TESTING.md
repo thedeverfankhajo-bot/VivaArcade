@@ -11,6 +11,7 @@ Run from the repository root:
     php tests/daily.php
     php tests/snapshot.php
     php tests/world-layout.php
+    php tests/game-catalog.php
     ./build.sh
 
 The build script checks PHP syntax for packaged source and test PHP files, runs queue/arena/party regressions, UUID storage and reward tests, Dollar wallet ledger tests, UTC daily reward claim tests, match-snapshot validation and the dependency-light district-directory regression. It then creates the PHAR, validates its manifest entries and generates SHA-256.
@@ -24,6 +25,7 @@ The build script checks PHP syntax for packaged source and test PHP files, runs 
 - Dollar credits and debits, duplicate transaction IDs, insufficient-funds protection, transaction source validation, lifetime totals, signed ledger entries and transaction history limits.
 - Daily rewards: UTC date boundary, same-day duplicate prevention, persistent claim state, atomic Dollar/XP credit, level calculation and ledger entries.
 - Versioned match snapshot round-trip and rejection of invalid schemas and inconsistent indexes.
+- Game Browser catalog: only implemented modes/categories are exposed; solo limits, direct-start status and shared-course metadata are validated.
 - Nineteen district definitions, unique IDs/centers, valid color keys, ASCII Finglish names, center lookup, spawn lookup and outside-map lookup.
 
 ## Not covered yet
