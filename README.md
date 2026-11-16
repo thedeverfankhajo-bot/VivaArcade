@@ -13,7 +13,8 @@ PHP 8.1+ · Dedicated VivaArcade world · Native Bedrock Forms · UUID player pr
 - New-world plaza with 19 named districts plus the Main Spawn Plaza (20 mapped areas), illuminated roads, road-facing gateways, neon pylons, a raised Spawn canopy and the Parkour Rush course.
 - Incremental main-thread world construction, bounded by one chunk and 180 block writes per tick by default, with versioned completion/retry state.
 - Existing world data is not cleared. Interrupted builds are replayed idempotently; completed older layouts are preserved and require a reviewed migration.
-- Native Bedrock JSON forms for the main menu and game selector; no external FormAPI dependency.
+- Native Bedrock JSON forms for the main menu and a Game Browser with All, Featured, Solo and Skill categories; only live modes are listed.
+- Parkour Rush details show real online-player and active-run counts, configured rewards, solo run limits, direct-start status and the shared-course boundary.
 - Solo Parkour Rush with server-side timer, checkpoint, fall recovery, finish and server-side reward.
 - UUID-keyed JSON player profiles, per-player file locks, atomic replacement and duplicate-transaction protection.
 - Server-side Dollar WalletService with positive credits, negative debits, bounded transaction amounts, source validation, transaction IDs, no-negative-balance enforcement, earned/spent totals and a 100-entry recent ledger.
@@ -95,7 +96,7 @@ The script requires worlds/VivaArcade/level.dat and a non-empty worlds/VivaArcad
 
 ## Tests and verification boundary
 
-Run php tests/run.php, php tests/storage.php, php tests/economy.php, php tests/daily.php, php tests/snapshot.php and php tests/world-layout.php, or use ./build.sh.
+Run php tests/run.php, php tests/storage.php, php tests/economy.php, php tests/daily.php, php tests/snapshot.php, php tests/world-layout.php and php tests/game-catalog.php, or use ./build.sh.
 
 These tests cover dependency-light match/queue/party services, UUID player data, reward persistence, Dollar ledger operations, district registration and road-facing gateway coordinates. The separate world workflow verifies PocketMine startup, layout completion and LevelDB ZIP export. Neither workflow connects a Bedrock client, so form rendering, movement physics and client rendering remain unverified. See docs/STATUS.md, docs/TEST-RESULTS.md and docs/TESTING.md.
 
