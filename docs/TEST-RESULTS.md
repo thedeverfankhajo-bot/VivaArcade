@@ -1,6 +1,37 @@
 # VivaArcade test results
 
-## Current main verification - world layout update
+## Current main verification - categorized Game Browser
+
+Commit: https://github.com/thedeverfankhajo-bot/VivaArcade/commit/d731e9fb794ae56b24e98392f294cf7d85b52cc9
+
+CI run: https://github.com/thedeverfankhajo-bot/VivaArcade/actions/runs/43982942080
+
+- Branch: main; status: success
+- PHP runtime: 8.1.34
+- Shell syntax checks: passed
+- PHP syntax checks: passed for all source and test PHP files, including the new catalog suite
+- Core: 86 passed
+- Storage: 20 passed
+- Economy: 19 passed
+- Daily reward: 18 passed
+- Match snapshot: 13 passed
+- World layout: 218 passed
+- Game catalog: 15 passed
+- Total: 389 assertions passed across seven suites
+- PHAR manifest validation, packaging and artifact upload: passed
+- Non-fatal pre-existing warning: tests/economy.php imports global InvalidArgumentException with a no-effect use statement.
+
+### Plugin artifact
+
+Artifact: https://github.com/thedeverfankhajo-bot/VivaArcade/actions/runs/43982942080/artifacts/14284450909
+
+```text
+b070a66c052a4a20e8ed0ca2f07000aeae8a41779f13d1faf5bbf34dded93b1a  VivaArcade.phar
+```
+
+The build validated the PHAR manifest and required plugin files. This CI run did not start a PocketMine server or connect a Bedrock client.
+
+## Previous real PocketMine world verification - layout update
 
 Commit: https://github.com/thedeverfankhajo-bot/VivaArcade/commit/7b3e366596980ac07e13ba5c44105b609e4f8a4e
 
