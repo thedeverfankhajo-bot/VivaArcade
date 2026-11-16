@@ -64,6 +64,16 @@ check($queues->leave($players[0]), 'requeued participant can leave queue');
 check($match->claimReward($players[0], 'match-complete'), 'finished participant can claim');
 check(!$match->claimReward($players[0], 'match-complete'), 'reward claim is idempotent');
 check(!$match->claimReward($players[2], 'match-complete'), 'non-participant cannot claim');
+$snapshot = $match->toArray();
+$restoredMatch = MatchSession::fromArray($snapshot);
+check($restoredMatch->getId() === $match->getId() && $restoredMatch->getState() === MatchSession::FINISHED, 'match snapshot restores identity and terminal state');
+check($restoredMatch->getScores() === $match->getScores() && $restoredMatch->getParticipants() === $match->getParticipants(), 'match snapshot restores scores and participant state');
+check(!$restoredMatch->claimReward($players[0], 'match-complete'), 'match snapshot preserves idempotent reward claims');
+$invalidSnapshot = $snapshot;
+unset($invalidSnapshot['scores'][$players[0]]);
+$snapshotRejected = false;
+try{ MatchSession::fromArray($invalidSnapshot); }catch(InvalidArgumentException){ $snapshotRejected = true; }
+check($snapshotRejected, 'match snapshot rejects incomplete score indexes');
 check(!$queues->finishMatch($match->getId(), $pool, 1060), 'match cannot finish twice');
 
 $parallelQueues = new QueueManager();
@@ -94,6 +104,10 @@ check($parties->invite($players[1], $players[2], 2040), 'new leader can invite')
 check($parties->accept($players[2], 2041), 'new invite can be accepted');
 check($parties->kick($players[1], $players[2]), 'leader can kick a member');
 check($parties->getPartyFor($players[2]) === null, 'kicked member is removed from index');
+check($parties->invite($players[1], $players[3], 2100), 'party invite is created for expiry-boundary check');
+check(!$parties->accept($players[3], 2130), 'party invite is expired at the exact expiry timestamp');
+check($parties->invite($players[1], $players[2], 2140), 'party invite is created for cleanup-boundary check');
+check($parties->cleanupExpiredInvites(2170) === 1, 'cleanup removes invites at the exact expiry timestamp');
 
 $invalidUuidRejected = false;
 try{ MatchSession::assertUuid('not-a-uuid'); }catch(InvalidArgumentException){ $invalidUuidRejected = true; }
