@@ -8,6 +8,7 @@ use Generator;
 use InvalidArgumentException;
 use pocketmine\block\Block;
 use pocketmine\math\Vector3;
+use pocketmine\promise\Promise;
 use pocketmine\scheduler\CancelTaskException;
 use pocketmine\scheduler\Task;
 use pocketmine\world\World;
@@ -15,8 +16,10 @@ use Throwable;
 
 /**
  * Applies a lazy world-layout operation stream in bounded main-thread batches.
- * Chunk generation is limited separately because it is more expensive than
- * writing blocks. No PocketMine world object is touched by an async worker.
+ *
+ * Chunk terrain is generated asynchronously through World::orderChunkPopulation().
+ * The task pauses until the promise resolves before writing blocks into that chunk.
+ * World/block mutations remain on PocketMine's main thread.
  */
 final class WorldBuildTask extends Task{
 
@@ -29,6 +32,10 @@ final class WorldBuildTask extends Task{
     /** @var callable(Throwable): void */
     private $onFailure;
 
+    private bool $waitingForChunk = false;
+    private ?Throwable $chunkFailure = null;
+    private bool $finished = false;
+
     /**
      * @param Generator<int, array<string, mixed>, mixed, void> $operations
      * @param callable(): void $onComplete
@@ -39,11 +46,10 @@ final class WorldBuildTask extends Task{
         Generator $operations,
         callable $onComplete,
         callable $onFailure,
-        private readonly int $blocksPerTick = 180,
-        private readonly int $chunksPerTick = 1
+        private readonly int $blocksPerTick = 180
     ){
-        if($blocksPerTick < 1 || $blocksPerTick > 5000 || $chunksPerTick < 1 || $chunksPerTick > 8){
-            throw new InvalidArgumentException('Invalid world build task budget');
+        if($blocksPerTick < 1 || $blocksPerTick > 5000){
+            throw new InvalidArgumentException('Invalid world build block budget');
         }
         $this->operations = $operations;
         $this->onComplete = $onComplete;
@@ -51,35 +57,68 @@ final class WorldBuildTask extends Task{
     }
 
     public function onRun() : void{
-        $blocks = 0;
-        $chunks = 0;
+        if($this->finished){
+            throw new CancelTaskException();
+        }
+
+        if($this->chunkFailure !== null){
+            $this->finished = true;
+            ($this->onFailure)($this->chunkFailure);
+            throw new CancelTaskException();
+        }
+
+        if($this->waitingForChunk){
+            return;
+        }
 
         try{
+            $blocks = 0;
             while($this->operations->valid()){
                 $operation = $this->operations->current();
                 $type = $operation['type'] ?? null;
 
                 if($type === 'chunk'){
-                    if($chunks >= $this->chunksPerTick){
-                        return;
-                    }
-                    $this->world->loadChunk((int) $operation['x'], (int) $operation['z']);
-                    ++$chunks;
-                }elseif($type === 'block'){
+                    // Loading a chunk does not imply terrain generation. Wait for
+                    // the population promise before any block operation can run.
+                    $this->waitingForChunk = true;
+                    $chunkX = (int) $operation['x'];
+                    $chunkZ = (int) $operation['z'];
+
+                    $promise = $this->world->orderChunkPopulation($chunkX, $chunkZ, null);
+                    $promise->onCompletion(
+                        function() : void{
+                            if(!$this->finished){
+                                $this->operations->next();
+                                $this->waitingForChunk = false;
+                            }
+                        },
+                        function() : void{
+                            if(!$this->finished){
+                                $this->chunkFailure = new \RuntimeException('PocketMine failed to generate a required VivaArcade chunk');
+                                $this->waitingForChunk = false;
+                            }
+                        }
+                    );
+                    return;
+                }
+
+                if($type === 'block'){
                     if($blocks >= $this->blocksPerTick){
                         return;
                     }
+
+                    $x = (int) $operation['x'];
+                    $y = (int) $operation['y'];
+                    $z = (int) $operation['z'];
+                    if(!$this->world->isChunkGenerated($x >> 4, $z >> 4)){
+                        throw new \UnexpectedValueException('World builder attempted to edit a chunk before terrain generation');
+                    }
+
                     $block = $operation['block'] ?? null;
                     if(!$block instanceof Block){
                         throw new \UnexpectedValueException('World builder emitted an invalid block operation');
                     }
-                    $this->world->setBlockAt(
-                        (int) $operation['x'],
-                        (int) $operation['y'],
-                        (int) $operation['z'],
-                        $block,
-                        false
-                    );
+                    $this->world->setBlockAt($x, $y, $z, $block, false);
                     ++$blocks;
                 }elseif($type === 'spawn'){
                     $this->world->setSpawnLocation(new Vector3(
@@ -94,10 +133,12 @@ final class WorldBuildTask extends Task{
                 $this->operations->next();
             }
 
+            $this->finished = true;
             ($this->onComplete)();
         }catch(CancelTaskException $e){
             throw $e;
         }catch(Throwable $e){
+            $this->finished = true;
             ($this->onFailure)($e);
         }
 
