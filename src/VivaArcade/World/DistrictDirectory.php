@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace VivaArcade\World;
 
-use pocketmine\block\utils\DyeColor;
-
 /**
  * Stable coordinates and player-facing Finglish names for VivaArcade districts.
  */
