@@ -74,10 +74,15 @@ jobs:
           }
           trap cleanup EXIT
           READY=0
-          for attempt in $(seq 1 900); do
+          for attempt in $(seq 1 180); do
             if grep -q "VivaArcade world layout completed" "$RUNNER_TEMP/pmmp-server.log"; then
               READY=1
               break
+            fi
+            if grep -Eqi "VivaArcade could not initialize|VivaArcade world layout stopped|Could not load plugin|Failed to load some plugins" "$RUNNER_TEMP/pmmp-server.log"; then
+              cat "$RUNNER_TEMP/pmmp-server.log"
+              echo "PocketMine reported a plugin/world initialization failure" >&2
+              exit 1
             fi
             if ! kill -0 "$SERVER_PID" 2>/dev/null; then
               cat "$RUNNER_TEMP/pmmp-server.log"
@@ -87,7 +92,7 @@ jobs:
           done
           if [[ "$READY" != "1" ]]; then
             tail -200 "$RUNNER_TEMP/pmmp-server.log"
-            echo "Timed out waiting for PocketMine to complete the world layout" >&2
+            echo "Timed out after 6 minutes waiting for PocketMine to complete the world layout" >&2
             exit 1
           fi
           echo "PocketMine reported world layout completion."
