@@ -2,15 +2,12 @@
 
 declare(strict_types=1);
 
-namespace VivaArcade\\World;
+namespace VivaArcade\World;
 
-use pocketmine\\block\\utils\\DyeColor;
+use pocketmine\block\utils\DyeColor;
 
 /**
  * Stable coordinates and player-facing Finglish names for VivaArcade districts.
- *
- * The same directory is used by the world builder and the lobby movement
- * adapter, preventing visual layout and zone detection from drifting apart.
  */
 final class DistrictDirectory{
 
@@ -22,28 +19,28 @@ final class DistrictDirectory{
      */
     public static function all() : array{
         return self::$districts ??= [
-            ['id' => 'arcade-central', 'label' => 'Markaz Arcade', 'x' => -240, 'z' => -180, 'color' => DyeColor::PURPLE()],
-            ['id' => 'minigame-district', 'label' => 'Mahalle MiniGame', 'x' => -120, 'z' => -180, 'color' => DyeColor::CYAN()],
-            ['id' => 'challenge-tower', 'label' => 'Borje Challenge', 'x' => 0, 'z' => -180, 'color' => DyeColor::BLUE()],
-            ['id' => 'parkour-district', 'label' => 'Mahalle Parkour', 'x' => 120, 'z' => -180, 'color' => DyeColor::MAGENTA()],
-            ['id' => 'racing-district', 'label' => 'Masir Racing', 'x' => 240, 'z' => -180, 'color' => DyeColor::PINK()],
+            ['id' => 'arcade-central', 'label' => 'Markaz Arcade', 'x' => -96, 'z' => -96, 'color' => DyeColor::PURPLE()],
+            ['id' => 'minigame-district', 'label' => 'Mahalle MiniGame', 'x' => -48, 'z' => -96, 'color' => DyeColor::CYAN()],
+            ['id' => 'challenge-tower', 'label' => 'Borje Challenge', 'x' => 0, 'z' => -96, 'color' => DyeColor::BLUE()],
+            ['id' => 'parkour-district', 'label' => 'Mahalle Parkour', 'x' => 160, 'z' => 48, 'color' => DyeColor::MAGENTA()],
+            ['id' => 'racing-district', 'label' => 'Mahalle Racing', 'x' => 96, 'z' => -96, 'color' => DyeColor::PINK()],
 
-            ['id' => 'puzzle-district', 'label' => 'Mahalle Puzzle', 'x' => -240, 'z' => -60, 'color' => DyeColor::RED()],
-            ['id' => 'build-district', 'label' => 'Mahalle Build', 'x' => -120, 'z' => -60, 'color' => DyeColor::ORANGE()],
-            ['id' => 'party-district', 'label' => 'Mahalle Party', 'x' => 0, 'z' => -60, 'color' => DyeColor::YELLOW()],
-            ['id' => 'shop-district', 'label' => 'Foroushgah Shop', 'x' => 120, 'z' => -60, 'color' => DyeColor::LIME()],
-            ['id' => 'cosmetics-plaza', 'label' => 'Meydane Cosmetics', 'x' => 240, 'z' => -60, 'color' => DyeColor::GREEN()],
+            ['id' => 'puzzle-district', 'label' => 'Mahalle Puzzle', 'x' => -96, 'z' => -48, 'color' => DyeColor::RED()],
+            ['id' => 'build-district', 'label' => 'Mahalle Build', 'x' => -48, 'z' => -48, 'color' => DyeColor::ORANGE()],
+            ['id' => 'party-district', 'label' => 'Mahalle Party', 'x' => 0, 'z' => -48, 'color' => DyeColor::YELLOW()],
+            ['id' => 'shop-district', 'label' => 'Foroushgah Shop', 'x' => 48, 'z' => -48, 'color' => DyeColor::LIME()],
+            ['id' => 'cosmetics-plaza', 'label' => 'Meydane Cosmetics', 'x' => 96, 'z' => -48, 'color' => DyeColor::GREEN()],
 
-            ['id' => 'leaderboard-hall', 'label' => 'Hall of Fame', 'x' => -240, 'z' => 60, 'color' => DyeColor::LIGHT_BLUE()],
-            ['id' => 'vip-lounge', 'label' => 'Lounge VIP', 'x' => -120, 'z' => 60, 'color' => DyeColor::WHITE()],
-            ['id' => 'achievement-hall', 'label' => 'Hall of Achievement', 'x' => 0, 'z' => 60, 'color' => DyeColor::BLACK()],
-            ['id' => 'daily-challenge-center', 'label' => 'Markaz Challenge Roozane', 'x' => 120, 'z' => 60, 'color' => DyeColor::GRAY()],
-            ['id' => 'weekly-challenge-center', 'label' => 'Markaz Challenge Haftegi', 'x' => 240, 'z' => 60, 'color' => DyeColor::BROWN()],
+            ['id' => 'leaderboard-hall', 'label' => 'Hall of Fame', 'x' => -96, 'z' => 48, 'color' => DyeColor::LIGHT_BLUE()],
+            ['id' => 'vip-lounge', 'label' => 'Lounge VIP', 'x' => -48, 'z' => 48, 'color' => DyeColor::WHITE()],
+            ['id' => 'achievement-hall', 'label' => 'Hall of Achievement', 'x' => 0, 'z' => 48, 'color' => DyeColor::BLACK()],
+            ['id' => 'daily-challenge-center', 'label' => 'Challenge Roozane', 'x' => 48, 'z' => 48, 'color' => DyeColor::GRAY()],
+            ['id' => 'weekly-challenge-center', 'label' => 'Challenge Haftegi', 'x' => 96, 'z' => 48, 'color' => DyeColor::BROWN()],
 
-            ['id' => 'tournament-arena', 'label' => 'Arena Tournament', 'x' => -240, 'z' => 180, 'color' => DyeColor::CYAN()],
-            ['id' => 'player-hangout', 'label' => 'Pateye Bazikonan', 'x' => -120, 'z' => 180, 'color' => DyeColor::PURPLE()],
-            ['id' => 'tutorial-zone', 'label' => 'Mantaqe Tutorial', 'x' => 0, 'z' => 180, 'color' => DyeColor::BLUE()],
-            ['id' => 'secret-reward-area', 'label' => 'Ganje Makfi', 'x' => 120, 'z' => 180, 'color' => DyeColor::MAGENTA()]
+            ['id' => 'tournament-arena', 'label' => 'Arena Tournament', 'x' => -96, 'z' => 96, 'color' => DyeColor::CYAN()],
+            ['id' => 'player-hangout', 'label' => 'Pateye Bazikonan', 'x' => -48, 'z' => 96, 'color' => DyeColor::PURPLE()],
+            ['id' => 'tutorial-zone', 'label' => 'Mantaqe Tutorial', 'x' => 0, 'z' => 96, 'color' => DyeColor::BLUE()],
+            ['id' => 'secret-reward-area', 'label' => 'Ganje Makfi', 'x' => 48, 'z' => 96, 'color' => DyeColor::MAGENTA()]
         ];
     }
 
@@ -62,11 +59,10 @@ final class DistrictDirectory{
         }
 
         foreach(self::all() as $district){
-            if(abs($x - $district['x']) <= 9 && abs($z - $district['z']) <= 9){
+            if(abs($x - $district['x']) <= 10 && abs($z - $district['z']) <= 10){
                 return $district;
             }
         }
-
         return null;
     }
 }
