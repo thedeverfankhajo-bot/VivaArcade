@@ -33,6 +33,6 @@ Updated: 2026-11-16
 
 ## Build and release
 
-`build.sh` packages from repository source and checks PHP syntax, core tests, storage tests, snapshot tests, the district-directory regression and PHAR manifest entries. It writes a checksum for the generated PHAR.
+`build.sh` packages from repository source and checks PHP syntax, core tests, storage tests, snapshot tests, the district-directory regression and PHAR manifest entries. GitHub Actions run [#43887719089](https://github.com/thedeverfankhajo-bot/VivaArcade/actions/runs/43887719089) completed successfully for source commit `9214d6436f2d2915a3c5157e906ed5fc47749a2b`; it built and validated `dist/VivaArcade.phar` and uploaded the PHAR plus checksum as artifact `vivaarcade-build`.
 
-The historical `dist/source.zip` remains damaged but is no longer used by the build. No `dist/VivaArcade-World.zip` is committed because no real PMMP runtime export has been generated. A PHAR is not claimed as verified until the current GitHub Actions run succeeds.
+The generated PHAR SHA-256 for that artifact is `67986d54e522531e5134f9ba52c1a3a1f5f96e97663962720b5d4e744ab1d076`. The artifact is downloadable from the Actions run; the PHAR itself is not committed into this repository. The historical `dist/source.zip` remains damaged but is no longer used by the build. No `dist/VivaArcade-World.zip` is committed because no real PMMP runtime export has been generated.
