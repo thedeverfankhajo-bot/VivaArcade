@@ -73,6 +73,22 @@ final class WalletService{
         return $this->storage->applyDollarTransaction($uuid, $playerName, -$amount, $type, $transactionId);
     }
 
+    /** Claim a daily reward through the atomic profile transaction. */
+    public function claimDailyReward(
+        string $uuid,
+        string $playerName,
+        string $utcDate,
+        int $dollarReward,
+        int $xpReward
+    ) : bool{
+        if($dollarReward < 1 || $dollarReward > 100_000 || $xpReward < 0 || $xpReward > 100_000){
+            throw new InvalidArgumentException("Daily reward is outside the allowed range");
+        }
+        return $this->storage->claimDailyReward(
+            $uuid, $playerName, $utcDate, $dollarReward, $xpReward, "daily:" . $utcDate
+        );
+    }
+
     /**
      * @return list<array<string, mixed>>
      */

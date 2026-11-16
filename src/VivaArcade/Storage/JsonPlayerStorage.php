@@ -93,6 +93,57 @@ final class JsonPlayerStorage{
         );
     }
 
+    /**
+     * Atomically commit a once-per-UTC-day reward, XP and its Dollar ledger entry.
+     * The day marker and transaction ID are saved in the same locked profile write.
+     */
+    public function claimDailyReward(
+        string $uuid,
+        string $playerName,
+        string $day,
+        int $dollarReward,
+        int $xpReward,
+        string $transactionId
+    ) : bool{
+        self::assertDay($day);
+        if($dollarReward < 1 || $dollarReward > 100_000 || $xpReward < 0 || $xpReward > 100_000){
+            throw new InvalidArgumentException("Invalid daily reward amount");
+        }
+        self::assertTransactionId($transactionId);
+        return $this->transact(
+            $uuid,
+            $playerName,
+            static function(array &$profile) use ($day, $dollarReward, $xpReward, $transactionId) : bool{
+                $key = hash("sha256", $transactionId);
+                if(($profile["daily_claimed_on"] ?? null) === $day || isset($profile["processed"][$key])){
+                    return false;
+                }
+                if($profile["dollar"] > PHP_INT_MAX - $dollarReward ||
+                    $profile["total_earned"] > PHP_INT_MAX - $dollarReward ||
+                    $profile["xp"] > PHP_INT_MAX - $xpReward){
+                    throw new RuntimeException("Daily reward profile overflow");
+                }
+                $profile["dollar"] += $dollarReward;
+                $profile["total_earned"] += $dollarReward;
+                $profile["xp"] += $xpReward;
+                $profile["level"] = 1 + intdiv($profile["xp"], 100);
+                $profile["daily_claimed_on"] = $day;
+                $profile["processed"][$key] = true;
+                $profile["transactions"][] = [
+                    "id" => $transactionId,
+                    "type" => "daily_reward",
+                    "amount" => $dollarReward,
+                    "balance_after" => $profile["dollar"],
+                    "created_at" => time()
+                ];
+                if(count($profile["transactions"]) > 100){
+                    $profile["transactions"] = array_slice($profile["transactions"], -100);
+                }
+                return true;
+            }
+        );
+    }
+
     public function completeParkour(
         string $uuid,
         string $playerName,
@@ -268,6 +319,7 @@ final class JsonPlayerStorage{
             "level" => 1,
             "xp" => 0,
             "dollar" => 0,
+            "daily_claimed_on" => null,
             "total_earned" => 0,
             "total_spent" => 0,
             "stats" => [
@@ -284,6 +336,16 @@ final class JsonPlayerStorage{
     private static function assertUuid(string $uuid) : void{
         if(!preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i', $uuid)){
             throw new InvalidArgumentException("Invalid player UUID");
+        }
+    }
+
+    private static function assertDay(string $day) : void{
+        if(!preg_match('/^\\d{4}-\\d{2}-\\d{2}$/', $day)){
+            throw new InvalidArgumentException("Invalid daily reward date");
+        }
+        $parsed = \\DateTimeImmutable::createFromFormat('!Y-m-d', $day, new \\DateTimeZone('UTC'));
+        if($parsed === false || $parsed->format('Y-m-d') !== $day){
+            throw new InvalidArgumentException("Invalid daily reward date");
         }
     }
 

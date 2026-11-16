@@ -2,3 +2,8 @@
 parkour:
   reward-dollar: 50
   reward-xp: 30
+
+# Once-per-UTC-day reward. The reset boundary is 00:00 UTC.
+daily-reward:
+  reward-dollar: 100
+  reward-xp: 25

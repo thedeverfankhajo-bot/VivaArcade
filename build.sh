@@ -33,6 +33,9 @@ php "$ROOT/tests/storage.php"
 echo "Running Dollar wallet and ledger tests..."
 php "$ROOT/tests/economy.php"
 
+echo "Running atomic daily reward tests..."
+php "$ROOT/tests/daily.php"
+
 echo "Running match snapshot codec tests..."
 php "$ROOT/tests/snapshot.php"
 
