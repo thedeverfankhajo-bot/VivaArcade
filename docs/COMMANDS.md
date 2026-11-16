@@ -5,7 +5,8 @@ All commands below are registered by the current PocketMine-MP API 5 plugin mani
 | Command | Current behavior |
 |---|---|
 | \`/arcade\` | Opens the native Bedrock main menu |
-| \`/games\` | Opens the implemented game selector (currently Parkour Rush only) |
+| \`/games\` | Opens the category-based Game Browser; only live Parkour Rush is listed |
+| \`/party\` | Opens the Native Bedrock Party menu and online party controls |
 | \`/profile\` | Opens the saved UUID profile summary |
 | \`/stats\` | Sends the current game and Parkour statistics |
 | \`/balance\` | Displays the current Dollar balance |
@@ -17,7 +18,7 @@ All commands below are registered by the current PocketMine-MP API 5 plugin mani
 
 - Game-facing output uses Finglish.
 - \`/spawn\` is a navigation command, not a match recovery or spectator command.
-- \`/shop\`, \`/party\`, \`/top\`, and \`/arcadmin\` are not registered in this revision.
+- \`/shop\`, \`/top\`, and \`/arcadmin\` are not registered in this revision.
 - The PartyManager and matchmaking classes are currently standalone core services, not live command integrations.
 
 ## Party
