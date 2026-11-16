@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace VivaArcade\\Core;
+namespace VivaArcade\Core;
 
 use InvalidArgumentException;
 
