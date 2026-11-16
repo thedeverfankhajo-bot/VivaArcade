@@ -11,7 +11,8 @@
 - Forms\\ArcadeForm: native Bedrock JSON form implementation without FormAPI dependencies.
 - Games\\ParkourRush: live solo mode adapter, checkpoint/fall handling and server-side completion.
 - Storage\\JsonPlayerStorage: UUID-keyed profiles, per-player locks, atomic file replacement, migration defaults and idempotent reward storage.
-- Economy\\WalletService: server-side Dollar facade with credit/debit source allow-lists, unique transaction IDs, non-negative balance enforcement and recent-ledger reads.
+- Economy\\WalletService: server-side Dollar facade with credit/debit source allow-lists, unique transaction IDs, non-negative balance enforcement, atomic daily reward claims and recent-ledger reads.
+- Challenges\\DailyRewardService: UTC day policy and reward status; it delegates every claim to WalletService and the locked JSON profile transaction.
 - Core\\ArenaPool, Core\\QueueManager, Core\\MatchSession: dependency-light arena ownership, queue and match state primitives with snapshot validation.
 - Party\\Party, Party\\PartyManager: UUID party and expiring invitation primitives.
 
@@ -19,7 +20,7 @@
 
 WalletService delegates all writes to JsonPlayerStorage. A signed Dollar delta, idempotency marker, lifetime total and ledger entry are written while holding the same per-player lock and are committed through the existing atomic file-replacement path. A rejected duplicate or insufficient-funds debit does not change the wallet.
 
-Parkour completion remains a specialized storage operation because it must atomically update the Dollar balance, XP, level, game statistics, best time and reward idempotency marker together. It also updates lifetime earnings and writes a post-reward balance to the ledger.
+Parkour completion remains a specialized storage operation because it must atomically update the Dollar balance, XP, level, game statistics, best time and reward idempotency marker together. It also updates lifetime earnings and writes a post-reward balance to the ledger. Daily rewards use a separate once-per-UTC-date transaction that atomically writes the day marker, Dollar/XP changes, level, idempotency key and ledger entry.
 
 Existing profiles receive missing total-earned/total-spent fields from their retained transaction entries. Storage remains a local JSON adapter; it is not a multi-server database or a distributed ledger.
 
@@ -31,7 +32,7 @@ The layout marker records version 2. A marker left in the building state is repl
 
 ## Runtime boundary
 
-Only Parkour Rush is currently connected to live PocketMine events. WalletService is composed by Main and powers /balance; credit/debit methods are available to trusted server-side services but are not yet called by shops, daily rewards or challenges. Queue, arena and party classes are not yet connected to live arena worlds, player teleportation, scheduled countdowns, forms, persistence or commands. They must not be treated as a production matchmaking or party network.
+Only Parkour Rush is currently connected to live PocketMine events. WalletService powers /balance and the daily reward claim; shop and challenge transactions are not connected. Queue, arena and party classes are not yet connected to live arena worlds, player teleportation, scheduled countdowns, forms, persistence or commands. They must not be treated as a production matchmaking or party network.
 
 ## Extension direction
 

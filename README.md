@@ -17,6 +17,7 @@ PHP 8.1+ · Dedicated VivaArcade world · Native Bedrock Forms · UUID player pr
 - Solo Parkour Rush with server-side timer, checkpoint, fall recovery, finish and server-side reward.
 - UUID-keyed JSON player profiles, per-player file locks, atomic replacement and duplicate-transaction protection.
 - Server-side Dollar WalletService with positive credits, negative debits, bounded transaction amounts, source validation, transaction IDs, no-negative-balance enforcement, earned/spent totals and a 100-entry recent ledger.
+- Once-per-UTC-day Dollar and XP rewards, committed atomically with a persistent daily marker and idempotent transaction ID; available through `/daily` and the native Bedrock form.
 - Parkour completion updates Dollar balance, lifetime earnings, XP, statistics and its reward ledger entry in one atomic profile transaction.
 - Lobby block break/place protection and active Parkour disconnect cleanup.
 - Dependency-light arena ownership, matchmaking queue, isolated match-session and UUID party core services.
@@ -27,7 +28,7 @@ PHP 8.1+ · Dedicated VivaArcade world · Native Bedrock Forms · UUID player pr
 
 The following requested systems are **not complete**: 24+ playable minigames, live matchmaking and independent arena instances, party forms/chat and party queue integration, teams/private matches, durable match recovery, shop purchase flows and cosmetic inventory, daily/weekly challenges, tournaments/events, live leaderboards, admin panel, SQLite adapter, spectator mode, full inventory/state restoration, the full decorative multi-district world finish and a reviewed migration path for completed older maps.
 
-The queue and party classes are core primitives; they are not yet wired to live commands, forms, a scheduler or PocketMine player events. The Dollar wallet API is implemented, but no shop, daily reward or challenge currently invokes it. Do not interpret a registered core game ID as a live playable minigame.
+The queue and party classes are core primitives; they are not yet wired to live commands, forms, a scheduler or PocketMine player events. The daily reward is connected to the wallet. Shop purchases and challenge/achievement reward flows are not yet connected. Do not interpret a registered core game ID as a live playable minigame.
 
 ## Requirements
 
@@ -42,7 +43,7 @@ Run from the repository root:
     chmod +x build.sh
     ./build.sh
 
-The build packages the repository's real src/, resources/ and root plugin.yml; it does not attempt to extract the damaged historical dist/source.zip. It runs PHP syntax checks, core regressions, UUID storage tests, wallet ledger tests, match-snapshot tests and a 19-district/Finglish directory regression, validates the PHAR manifest and writes dist/SHA256SUMS.txt.
+The build packages the repository's real src/, resources/ and root plugin.yml; it does not attempt to extract the damaged historical dist/source.zip. It runs PHP syntax checks, core regressions, UUID storage tests, wallet ledger tests, daily reward tests, match-snapshot tests and a 19-district/Finglish directory regression, validates the PHAR manifest and writes dist/SHA256SUMS.txt.
 
 ## Install
 
@@ -62,6 +63,7 @@ The code has not yet been validated on a live PocketMine server or Bedrock clien
 | /profile | View your VivaArcade profile |
 | /stats | View basic game statistics |
 | /balance | View Dollar balance |
+| /daily | View and claim the once-per-UTC-day reward |
 | /leave | Leave active Parkour Rush |
 | /spawn | Return to the VivaArcade lobby |
 
@@ -77,7 +79,7 @@ The builder populates a new world or resumes a build explicitly marked building.
 
 Profiles are stored under the plugin data folder with filenames based on player UUID. JSON writes use a per-player lock and atomic rename. A malformed profile is not silently replaced with defaults.
 
-WalletService exposes server-side credit/debit operations with an allow-list of transaction types. Every operation uses a server-created transaction ID, a per-player lock and atomic profile replacement. Duplicate IDs are rejected; a debit that exceeds the current balance leaves the profile unchanged. The profile stores total Dollar earned, total Dollar spent and the latest 100 ledger entries. The general wallet API is not yet wired to shops, daily rewards or challenges.
+WalletService exposes server-side credit/debit operations with an allow-list of transaction types. Every operation uses a server-created transaction ID, a per-player lock and atomic profile replacement. Duplicate IDs are rejected; a debit that exceeds the current balance leaves the profile unchanged. The profile stores total Dollar earned, total Dollar spent and the latest 100 ledger entries. The general wallet API is not yet wired to shops or challenge rewards.
 
 Parkour completion keeps its existing single atomic storage transaction so Dollar, XP, game statistics and the idempotency marker are committed together. Its current reward is configured in resources/config.yml; it is not yet the complete challenge/shop/economy feature set requested.
 
@@ -91,6 +93,11 @@ The script requires worlds/VivaArcade/level.dat and a non-empty worlds/VivaArcad
 
 ## Tests and verification boundary
 
-Run php tests/run.php, php tests/storage.php, php tests/economy.php, php tests/snapshot.php and php tests/world-layout.php, or use ./build.sh.
+Run php tests/run.php, php tests/storage.php, php tests/economy.php, php tests/daily.php, php tests/snapshot.php and php tests/world-layout.php, or use ./build.sh.
 
 These tests cover dependency-light match/queue/party services, UUID player data, reward persistence, Dollar ledger operations and the district directory. They do not simulate PocketMine startup, LevelDB, Bedrock forms, in-world movement physics, or client rendering. See docs/STATUS.md, docs/TEST-RESULTS.md and docs/TESTING.md.
+
+
+## Daily reward
+
+The `daily-reward` section configures the server-side reward. Claims are limited to once per UTC date and reset at 00:00 UTC. Dollar, XP, level, date marker and the wallet ledger entry are committed in the same locked atomic profile write. The client cannot choose a reward amount or claim date.

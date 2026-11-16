@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.6.0 - 2026-11-16
+
+### Added
+- Added DailyRewardService with a once-per-UTC-day reward and native Bedrock claim form.
+- Added an atomic storage transaction for the daily marker, Dollar balance, lifetime earnings, XP, level and unique ledger entry.
+- Added `/daily` and a Finglish Daily Reward entry in the main menu, plus a Finglish Help screen.
+- Added daily reward regression tests for duplicate claims, UTC rollover, persistence, XP, level and ledger updates.
+
+### Changed
+- Build now runs the daily reward regression suite before PHAR packaging.
+- Plugin metadata version is now 0.6.0.
+
+### Verification boundary
+- The daily reward logic has standalone PHP regression coverage. Live PocketMine startup, Bedrock client form rendering and LevelDB world export need separate runtime confirmation.
+
 ## 0.5.0 - 2026-11-16
 
 ### Added

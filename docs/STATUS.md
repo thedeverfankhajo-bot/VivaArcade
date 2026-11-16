@@ -14,6 +14,7 @@ Updated: 2026-11-16
 - UUID-keyed JSON player profile storage with per-player file locking and atomic replacement.
 - Server-side Dollar WalletService with source allow-lists, unique transaction IDs, idempotent credits/debits, insufficient-funds rejection and balance/earned/spent totals.
 - A bounded recent Dollar ledger that records signed amounts and post-transaction balances; Parkour completion retains its all-in-one reward/profile commit.
+- DailyRewardService and `/daily`: once-per-UTC-day Dollar/XP rewards, server-derived dates, stable transaction IDs, atomic profile updates and a native Bedrock claim form.
 - Existing profiles migrate missing lifetime totals from retained transactions without discarding existing player data.
 - Lobby block break/place protection and disconnect cleanup for active Parkour sessions.
 - Dedicated LobbyManager owns lobby teleport routing; /spawn exits Parkour Rush before returning a player to the saved world spawn.
@@ -27,7 +28,7 @@ Updated: 2026-11-16
 - The 19-district layout is scheduled only for brand-new worlds or a layout marker left in the building state. A completed older map is preserved; it does not automatically gain the new districts.
 - District names/coordinates and Finglish labels have a standalone regression test; the 3D world construction still needs runtime visual verification.
 - Existing matchmaking/party code is not wired to PMMP commands, forms, scheduler, live player state or match adapters.
-- WalletService is implemented and /balance reads through it, but no shop purchase, daily payout, challenge payout or achievement payout invokes credit/debit yet.
+- WalletService powers `/balance` and the atomic daily reward claim. Shop purchases, challenge rewards and achievement payouts are not connected yet.
 - Implemented player-facing messages and menus use Finglish; the larger requested menu set is not yet present.
 
 ## Not implemented
@@ -36,7 +37,7 @@ Updated: 2026-11-16
 
 ## Build and release
 
-The build script now includes the Dollar wallet regression suite in addition to core, storage, snapshot and world-layout tests. The previous successful Actions artifact documented below predates this wallet change and is not evidence that the current source revision has built.
+The build script now includes the Dollar wallet and daily reward regression suites in addition to core, storage, snapshot and world-layout tests. The previous successful Actions artifact documented below predates this wallet change and is not evidence that the current source revision has built.
 
 The earlier Actions run [#43887719089](https://github.com/thedeverfankhajo-bot/VivaArcade/actions/runs/43887719089) completed successfully for source commit 9214d6436f2d2915a3c5157e906ed5fc47749a2b; it built and validated dist/VivaArcade.phar and uploaded the PHAR plus checksum as artifact vivaarcade-build. Its SHA-256 was 67986d54e522531e5134f9ba52c1a3a1f5f96e97663962720b5d4e744ab1d076.
 
