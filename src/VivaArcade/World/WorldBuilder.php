@@ -37,7 +37,7 @@ final class WorldBuilder{
         }
 
         foreach([-72, 0, 72] as $z){
-            $this->addChunkRectangle($chunks, -120, 120, $z - 1, $z + 1);
+            $this->addChunkRectangle($chunks, -120, 160, $z - 1, $z + 1);
         }
         foreach([-72, -24, 24, 72] as $x){
             $this->addChunkRectangle($chunks, $x - 1, $x + 1, -120, 120);
@@ -52,7 +52,9 @@ final class WorldBuilder{
         yield from $this->mainPlaza();
         yield from $this->districtRoads();
         foreach(DistrictDirectory::all() as $district){
-            yield from $this->district($district['x'], $district['z'], DyeColor::from($district['color']));
+            $color = DyeColor::from($district['color']);
+            yield from $this->district($district['x'], $district['z'], $color);
+            yield from $this->districtAccess($district['x'], $district['z'], $color);
         }
         yield from $this->parkourCourse();
 
@@ -118,7 +120,7 @@ final class WorldBuilder{
      */
     private function districtRoads() : Generator{
         foreach([-72, 0, 72] as $z){
-            $endX = $z === 0 ? 95 : 120;
+            $endX = $z === 0 ? 95 : 160;
             for($x = -120; $x <= $endX; ++$x){
                 foreach([-1, 0, 1] as $offset){
                     $block = $offset !== 0
@@ -148,6 +150,23 @@ final class WorldBuilder{
                     ? VanillaBlocks::CONCRETE()->setColor(\pocketmine\block\utils\DyeColor::MAGENTA())
                     : VanillaBlocks::SEA_LANTERN();
                 yield $this->block($x, 100, 48 + $offset, $block);
+            }
+        }
+    }
+
+    /**
+     * Connect every district entrance to the nearest east-west lit avenue.
+     *
+     * @return Generator<int, array<string, mixed>, mixed, void>
+     */
+    private function districtAccess(int $centerX, int $centerZ, DyeColor $color) : Generator{
+        $roadZ = $centerZ < 0 ? -72 : 72;
+        $direction = $roadZ > $centerZ ? 1 : -1;
+        $accent = VanillaBlocks::CONCRETE()->setColor($color);
+        for($z = $centerZ + ($direction * 11); $direction > 0 ? $z <= $roadZ : $z >= $roadZ; $z += $direction){
+            foreach([-1, 0, 1] as $offset){
+                $block = $offset === 0 ? $accent : VanillaBlocks::SEA_LANTERN();
+                yield $this->block($centerX + $offset, 100, $z, $block);
             }
         }
     }
