@@ -42,7 +42,7 @@ final class PartyManager{
         if(isset($this->membership[$targetUuid])){ return false; }
         $invite = $this->invites[$targetUuid] ?? null;
         unset($this->invites[$targetUuid]);
-        if($invite === null || $invite['expiresAt'] < ($now ?? time())){ return false; }
+        if($invite === null || $invite['expiresAt'] <= ($now ?? time())){ return false; }
         $party = $this->parties[$invite['partyId']] ?? null;
         if($party === null || !$party->addMember($targetUuid, $now)){ return false; }
         $this->membership[$targetUuid] = $party->getId();
@@ -80,7 +80,7 @@ final class PartyManager{
         $timestamp = $now ?? time();
         $removed = 0;
         foreach($this->invites as $uuid => $invite){
-            if($invite['expiresAt'] < $timestamp){ unset($this->invites[$uuid]); ++$removed; }
+            if($invite['expiresAt'] <= $timestamp){ unset($this->invites[$uuid]); ++$removed; }
         }
         return $removed;
     }
