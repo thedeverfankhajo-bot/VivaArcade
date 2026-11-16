@@ -41,6 +41,8 @@ php "$ROOT/tests/snapshot.php"
 
 echo "Running district directory and Finglish layout tests..."
 php "$ROOT/tests/world-layout.php"
+echo "Running live game catalog tests..."
+php "$ROOT/tests/game-catalog.php"
 
 echo "Building PHAR..."
 rm -f "$OUTPUT"
