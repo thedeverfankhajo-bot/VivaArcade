@@ -9,56 +9,88 @@ use pocketmine\world\World;
 use pocketmine\world\WorldCreationOptions;
 use pocketmine\world\generator\normal\Normal;
 use RuntimeException;
+use Throwable;
 
-/** Loads the dedicated world; only a newly created or interrupted VivaArcade layout is built. */
+/**
+ * Loads the dedicated world and schedules a resumable, tick-budgeted layout.
+ * Existing worlds with a completed older layout are deliberately preserved.
+ */
 final class ArcadeWorldManager{
 
-    public const WORLD_NAME = "VivaArcade";
+    public const WORLD_NAME = 'VivaArcade';
+    private const LAYOUT_VERSION = 2;
 
     private bool $playable = false;
 
     public function __construct(private readonly PluginBase $plugin){}
 
-    public function load() : World{
+    /**
+     * @param callable(): void $onPlayable
+     */
+    public function load(callable $onPlayable) : World{
         $manager = $this->plugin->getServer()->getWorldManager();
         $newWorld = !$manager->isWorldGenerated(self::WORLD_NAME);
 
         if($newWorld){
             $options = WorldCreationOptions::create()->setGeneratorClass(Normal::class);
             if(!$manager->generateWorld(self::WORLD_NAME, $options, false)){
-                throw new RuntimeException("PocketMine could not generate the VivaArcade world");
+                throw new RuntimeException('PocketMine could not generate the VivaArcade world');
             }
         }elseif(!$manager->isWorldLoaded(self::WORLD_NAME)){
             if(!$manager->loadWorld(self::WORLD_NAME)){
-                throw new RuntimeException("PocketMine could not load the existing VivaArcade world");
+                throw new RuntimeException('PocketMine could not load the existing VivaArcade world');
             }
         }
 
         $world = $manager->getWorldByName(self::WORLD_NAME);
         if(!$world instanceof World){
-            throw new RuntimeException("VivaArcade world is not available after load/generation");
+            throw new RuntimeException('VivaArcade world is not available after load/generation');
         }
 
-        $stateFile = $this->plugin->getDataFolder() . "world-layout-v1.json";
+        $stateFile = $this->plugin->getDataFolder() . 'world-layout-v1.json';
         $state = null;
+        $version = 0;
         if(is_file($stateFile)){
             $raw = file_get_contents($stateFile);
             if(is_string($raw)){
-                $decoded = json_decode($raw, true);
-                $state = is_array($decoded) ? ($decoded["state"] ?? null) : null;
+                try{
+                    $decoded = json_decode($raw, true, 16, JSON_THROW_ON_ERROR);
+                    if(is_array($decoded)){
+                        $state = is_string($decoded['state'] ?? null) ? $decoded['state'] : null;
+                        $version = is_int($decoded['version'] ?? null) ? $decoded['version'] : 0;
+                    }
+                }catch(\JsonException){
+                    $this->plugin->getLogger()->warning('World layout marker is invalid; existing world blocks will be preserved.');
+                }
             }
         }
 
-        if($newWorld || $state === "building"){
-            $this->writeState($stateFile, "building");
-            (new WorldBuilder())->build($world);
-            $this->writeState($stateFile, "complete");
-            $this->playable = true;
-            $this->plugin->getLogger()->info("Created the initial VivaArcade plaza and Parkour Rush course.");
+        $needsBuild = $newWorld || ($version >= self::LAYOUT_VERSION && $state === 'building');
+        if($needsBuild){
+            $this->writeState($stateFile, 'building');
+            $builder = new WorldBuilder();
+            $task = new WorldBuildTask(
+                $world,
+                $builder->operations(),
+                function() use ($stateFile, $onPlayable) : void{
+                    $this->writeState($stateFile, 'complete');
+                    $this->playable = true;
+                    $this->plugin->getLogger()->info('VivaArcade world layout completed.');
+                    $onPlayable();
+                },
+                function(Throwable $e) : void{
+                    $this->plugin->getLogger()->error('VivaArcade world layout stopped; its owned area will be retried on the next server start.');
+                    $this->plugin->getLogger()->logException($e);
+                }
+            );
+            $this->plugin->getScheduler()->scheduleRepeatingTask($task, 1);
+            $this->plugin->getLogger()->info('VivaArcade world layout is being built in bounded tick batches.');
         }else{
-            $this->playable = $state === "complete";
-            if(!$this->playable){
-                $this->plugin->getLogger()->warning("The existing VivaArcade world was preserved. No untracked blocks were changed; game layout is not marked as installed.");
+            $this->playable = $state === 'complete';
+            if($this->playable && $version < self::LAYOUT_VERSION){
+                $this->plugin->getLogger()->warning('An older completed VivaArcade map was detected and preserved without automatic edits. The expanded district layout requires a reviewed migration.');
+            }elseif(!$this->playable){
+                $this->plugin->getLogger()->warning('The existing VivaArcade world was preserved. No untracked blocks were changed; game layout is not marked as installed.');
             }
         }
 
@@ -70,11 +102,15 @@ final class ArcadeWorldManager{
     }
 
     private function writeState(string $path, string $state) : void{
-        $json = json_encode(["version" => 1, "state" => $state, "updated_at" => time()], JSON_THROW_ON_ERROR) . PHP_EOL;
-        $temporary = $path . ".tmp";
+        $json = json_encode([
+            'version' => self::LAYOUT_VERSION,
+            'state' => $state,
+            'updated_at' => time()
+        ], JSON_THROW_ON_ERROR) . PHP_EOL;
+        $temporary = $path . '.tmp';
         if(file_put_contents($temporary, $json, LOCK_EX) === false || !rename($temporary, $path)){
             @unlink($temporary);
-            throw new RuntimeException("Unable to save world layout state");
+            throw new RuntimeException('Unable to save world layout state');
         }
     }
 }
