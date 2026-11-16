@@ -54,7 +54,7 @@ The build packages the repository's real src/, resources/ and root plugin.yml; i
 3. Start PocketMine-MP. On first launch, the plugin asks PocketMine to create worlds/VivaArcade/ and populates the initial plaza and Parkour Rush course.
 4. Join with a Bedrock client and use /arcade.
 
-The current main source (commit 7b3e366596980ac07e13ba5c44105b609e4f8a4e) passed PHP CI run #43981599070: PHP 8.1.34 syntax checks, six regression suites (374 assertions), PHAR manifest validation and artifact upload. World workflow #43981599175 booted PocketMine-MP 5.44.3, completed the layout, stopped the server cleanly and exported a ZIP whose LevelDB contents and ZIP integrity were checked. No Bedrock client was connected; forms, interaction, movement physics and visual appearance still need client testing. See docs/TEST-RESULTS.md for checksums and artifact links.
+The current Game Browser source on main (commit d731e9fb794ae56b24e98392f294cf7d85b52cc9) passed PHP CI run #43982942080 on PHP 8.1.34: syntax checks, seven regression suites (389 assertions), PHAR manifest validation and artifact upload. The PHAR SHA-256 is b070a66c052a4a20e8ed0ca2f07000aeae8a41779f13d1faf5bbf34dded93b1a; artifact: https://github.com/thedeverfankhajo-bot/VivaArcade/actions/runs/43982942080/artifacts/14284450909. The separate PocketMine-MP 5.44.3 world build/export #43981599175 validated layout source commit 7b3e366596980ac07e13ba5c44105b609e4f8a4e and produced the LevelDB ZIP documented in docs/TEST-RESULTS.md; world-generation code was not changed by this Game Browser update. No Bedrock client was connected, so form rendering, interaction, movement physics and visual appearance still need client testing.
 
 ## Commands currently registered
 
@@ -98,7 +98,7 @@ The script requires worlds/VivaArcade/level.dat and a non-empty worlds/VivaArcad
 
 Run php tests/run.php, php tests/storage.php, php tests/economy.php, php tests/daily.php, php tests/snapshot.php, php tests/world-layout.php and php tests/game-catalog.php, or use ./build.sh.
 
-These tests cover dependency-light match/queue/party services, UUID player data, reward persistence, Dollar ledger operations, district registration and road-facing gateway coordinates. The separate world workflow verifies PocketMine startup, layout completion and LevelDB ZIP export. Neither workflow connects a Bedrock client, so form rendering, movement physics and client rendering remain unverified. See docs/STATUS.md, docs/TEST-RESULTS.md and docs/TESTING.md.
+These tests cover dependency-light match/queue/party services, UUID player data, reward persistence, Dollar ledger operations, district registration and road-facing gateway coordinates, plus the Game Browser catalog's supported categories and accurate live-mode metadata. The separate world workflow verifies PocketMine startup, layout completion and LevelDB ZIP export. Neither workflow connects a Bedrock client, so form rendering, movement physics and client rendering remain unverified. See docs/STATUS.md, docs/TEST-RESULTS.md and docs/TESTING.md.
 
 
 ## Daily reward
