@@ -26,4 +26,4 @@ Do not expose these classes as proof of multiplayer readiness until those adapte
 
 ## Tests
 
-Run `php tests/run.php`. The current suite passes 58 deterministic checks covering queue uniqueness, arena ownership, parallel-match isolation, score validation, disconnect/reconnect, terminal transitions, duplicate reward prevention, snapshot round-trip/tamper rejection, invite expiry at the exact deadline, membership uniqueness and party leadership transfer.
+Run `php tests/run.php`. The current suite passes 60 deterministic checks covering queue uniqueness, arena ownership, parallel-match isolation, score validation, disconnect/reconnect, terminal transitions, duplicate reward prevention, snapshot round-trip/tamper rejection, invite expiry at the exact deadline, membership uniqueness and party leadership transfer.
