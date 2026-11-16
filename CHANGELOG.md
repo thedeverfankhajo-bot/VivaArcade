@@ -15,9 +15,9 @@
 - Bumped the layout marker to version 3 while preserving completed older maps; no automatic destructive migration is performed.
 
 ### Verification
-- Commit: https://github.com/thedeverfankhajo-bot/VivaArcade/commit/7b3e366596980ac07e13ba5c44105b609e4f8a4e
-- PHP CI #43981599070 passed: six suites, 374 assertions, syntax checks, PHAR manifest validation and artifact upload.
-- PocketMine-MP 5.44.3 world build/export #43981599175 passed. Exact artifacts and checksums are in docs/TEST-RESULTS.md.
+- Current main UI commit d731e9fb794ae56b24e98392f294cf7d85b52cc9 passed PHP CI #43982942080: seven suites, 389 assertions, syntax checks, PHAR manifest validation and artifact upload.
+- PHAR SHA-256: b070a66c052a4a20e8ed0ca2f07000aeae8a41779f13d1faf5bbf34dded93b1a; artifact: https://github.com/thedeverfankhajo-bot/VivaArcade/actions/runs/43982942080/artifacts/14284450909.
+- PocketMine-MP 5.44.3 world build/export #43981599175 passed separately on layout commit 7b3e366596980ac07e13ba5c44105b609e4f8a4e. The Game Browser change did not modify world-generation code. Exact world artifact and checksum are in docs/TEST-RESULTS.md.
 ## 0.7.0 - 2026-11-17
 
 ### Added
