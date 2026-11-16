@@ -244,75 +244,7 @@ final class Main extends PluginBase implements Listener{
                             ) ?? false;
                             if($claimed){
                                 $target->sendMessage(
-                                    'Padesh roozane daryaft shod: 
-        $profile = $this->storage?->getProfile($player->getUniqueId()->toString(), $player->getName());
-        if($profile === null){
-            $player->sendMessage('Profile dar hale hazer dar dastres nist.');
-            return;
-        }
-        $stats = $profile['stats'];
-        $best = $stats['best_parkour_ms'] > 0
-            ? number_format($stats['best_parkour_ms'] / 1000, 2) . 's'
-            : 'Sabt nashode';
-        $content = 'Bazikon: ' . $player->getName()
-            . "\nSath: " . $profile['level']
-            . "\nXP: " . $profile['xp']
-            . "\nMojoodi Dollar: $" . $profile['dollar']
-            . "\nTedad Bazi: " . $stats['games']
-            . "\nTedad Barande: " . $stats['wins']
-            . "\nBehtarin Zamane Parkour: " . $best;
-
-        $this->sendForm($player, new ArcadeForm(
-            'Profile Shoma',
-            $content,
-            ['Bazi', 'Bargasht', 'Bastan'],
-            function(Player $target, int $choice) : void{
-                if($choice === 0){
-                    $this->openGamesMenu($target);
-                }elseif($choice === 1){
-                    $this->openMainMenu($target);
-                }
-            }
-        ));
-    }
-
-    private function showStatistics(Player $player) : void{
-        $profile = $this->storage?->getProfile($player->getUniqueId()->toString(), $player->getName());
-        if($profile === null){
-            $player->sendMessage('Amar dar hale hazer dar dastres nist.');
-            return;
-        }
-        $stats = $profile['stats'];
-        $player->sendMessage('Amar Shoma');
-        $player->sendMessage('Bazi ha: ' . $stats['games'] . ' | Barande ha: ' . $stats['wins'] . ' | XP: ' . $profile['xp']);
-        $player->sendMessage('Behtarin Zamane Parkour: ' . (
-            $stats['best_parkour_ms'] > 0
-                ? number_format($stats['best_parkour_ms'] / 1000, 2) . 's'
-                : 'Sabt nashode'
-        ));
-    }
-
-    private function showBalance(Player $player) : void{
-        $balance = $this->wallet?->getBalance($player->getUniqueId()->toString(), $player->getName());
-        if($balance === null){
-            $player->sendMessage('Mojoodi dar hale hazer dar dastres nist.');
-            return;
-        }
-        $player->sendMessage('Mojoodi Shoma: $' . $balance);
-    }
-
-    private function sendForm(Player $player, ArcadeForm $form) : void{
-        $uuid = $player->getUniqueId()->toString();
-        $now = microtime(true);
-        if(isset($this->lastFormAt[$uuid]) && ($now - $this->lastFormAt[$uuid]) < 0.35){
-            $player->sendActionBarMessage('Lotfan baraye baz kardan menu kami sabr konid.');
-            return;
-        }
-        $this->lastFormAt[$uuid] = $now;
-        $player->sendForm($form);
-    }
-}
- . $status['dollar'] .
+                                    'Padesh roozane daryaft shod: $' . $status['dollar'] .
                                     ' Dollar va ' . $status['xp'] . ' XP!'
                                 );
                             }else{
