@@ -229,6 +229,14 @@ final class MatchSession{
         if(count($participants) > $session->maximumPlayers){
             throw new InvalidArgumentException('Match snapshot exceeds maximum player count');
         }
+        if(in_array($data['state'], [self::COUNTDOWN, self::RUNNING, self::FINISHED], true) &&
+            count($participants) < $session->minimumPlayers){
+            throw new InvalidArgumentException('Match snapshot has fewer participants than its minimum');
+        }
+        if($data['state'] === self::CANCELLED && $data['startedAt'] !== null &&
+            count($participants) < $session->minimumPlayers){
+            throw new InvalidArgumentException('Started cancelled match has fewer participants than its minimum');
+        }
 
         $scores = [];
         foreach($data['scores'] as $uuid => $score){
@@ -257,6 +265,10 @@ final class MatchSession{
                 throw new InvalidArgumentException('Invalid or duplicate reward claim snapshot');
             }
             $rewardClaims[$claim] = true;
+        }
+
+        if($data['state'] !== self::FINISHED && $rewardClaims !== []){
+            throw new InvalidArgumentException('Only a finished match may contain reward claims');
         }
 
         $session->state = $data['state'];
