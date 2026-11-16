@@ -238,11 +238,14 @@ final class Main extends PluginBase implements Listener{
                             return;
                         }
                         try{
+                            // The server re-checks the current UTC date on claim.
                             $claimed = $this->dailyRewards?->claim(
-                                $target->getUniqueId()->toString(), $target->getName()
+                                $target->getUniqueId()->toString(),
+                                $target->getName()
                             ) ?? false;
                             if($claimed){
-                                $target->sendMessage('Padesh roozane daryaft shod: 
+                                $target->sendMessage(
+                                    'Padesh roozane daryaft shod: 
         $profile = $this->storage?->getProfile($player->getUniqueId()->toString(), $player->getName());
         if($profile === null){
             $player->sendMessage('Profile dar hale hazer dar dastres nist.');
@@ -310,7 +313,9 @@ final class Main extends PluginBase implements Listener{
         $player->sendForm($form);
     }
 }
- . $status['dollar'] . ' Dollar va ' . $status['xp'] . ' XP!');
+ . $status['dollar'] .
+                                    ' Dollar va ' . $status['xp'] . ' XP!'
+                                );
                             }else{
                                 $target->sendMessage('Padesh emrooz ghablan daryaft shode ast.');
                             }

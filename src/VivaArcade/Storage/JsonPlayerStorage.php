@@ -340,10 +340,10 @@ final class JsonPlayerStorage{
     }
 
     private static function assertDay(string $day) : void{
-        if(!preg_match('/^\\d{4}-\\d{2}-\\d{2}$/', $day)){
+        if(!preg_match('/^\d{4}-\d{2}-\d{2}$/', $day)){
             throw new InvalidArgumentException("Invalid daily reward date");
         }
-        $parsed = \\DateTimeImmutable::createFromFormat('!Y-m-d', $day, new \\DateTimeZone('UTC'));
+        $parsed = \DateTimeImmutable::createFromFormat('!Y-m-d', $day, new \DateTimeZone('UTC'));
         if($parsed === false || $parsed->format('Y-m-d') !== $day){
             throw new InvalidArgumentException("Invalid daily reward date");
         }

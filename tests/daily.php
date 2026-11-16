@@ -22,9 +22,9 @@ function dailyCheck(bool $condition, string $message) : void{
 
 $directory = sys_get_temp_dir() . DIRECTORY_SEPARATOR . "vivaarcade-daily-" . bin2hex(random_bytes(6));
 $uuid = "00000000-0000-4000-8000-000000000021";
-$utc = new \\DateTimeZone("UTC");
-$dayOne = new \\DateTimeImmutable("2026-11-16 12:00:00", $utc);
-$dayTwo = new \\DateTimeImmutable("2026-11-17 00:00:01", $utc);
+$utc = new \DateTimeZone("UTC");
+$dayOne = new \DateTimeImmutable("2026-11-16 12:00:00", $utc);
+$dayTwo = new \DateTimeImmutable("2026-11-17 00:00:01", $utc);
 
 try{
     $storage = new JsonPlayerStorage($directory);
@@ -57,11 +57,11 @@ try{
     $invalidConfigRejected = false;
     try{
         new DailyRewardService($storage, $wallet, 0, 10);
-    }catch(\\InvalidArgumentException){
+    }catch(\InvalidArgumentException){
         $invalidConfigRejected = true;
     }
     dailyCheck($invalidConfigRejected, "invalid daily reward configuration is rejected");
-    echo "PASS: {$checks} VivaArcade daily reward checks\\n";
+    echo "PASS: {$checks} VivaArcade daily reward checks\n";
 }finally{
     if(is_dir($directory)){
         foreach(glob($directory . DIRECTORY_SEPARATOR . "*") ?: [] as $file){
