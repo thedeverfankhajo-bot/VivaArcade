@@ -1,46 +1,36 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SOURCE_ARCHIVE="$ROOT/dist/source.zip"
+ROOT="$(cd "$(dirname "$0")" && pwd)"
 DIST="$ROOT/dist"
+OUTPUT="$DIST/VivaArcade.phar"
+WORK="$(mktemp -d)"
+trap 'rm -rf "$WORK"' EXIT
+STAGE="$WORK/package"
 
 command -v php >/dev/null || { echo "PHP CLI is required" >&2; exit 1; }
-command -v unzip >/dev/null || { echo "unzip is required" >&2; exit 1; }
-[[ -f "$SOURCE_ARCHIVE" ]] || { echo "Missing dist/source.zip; refusing to build an incomplete plugin" >&2; exit 1; }
-
+command -v sha256sum >/dev/null || { echo "sha256sum is required" >&2; exit 1; }
 php -r 'foreach (["Phar", "json", "hash", "zlib"] as $ext) { if (!extension_loaded($ext)) { fwrite(STDERR, "Missing PHP extension: {$ext}\n"); exit(1); } }'
-if ! unzip -t "$SOURCE_ARCHIVE"; then
-  echo "Invalid or truncated dist/source.zip. Restore the complete original Phase 1 source bundle before building." >&2
-  exit 1
-fi
 
-WORK="$(mktemp -d)"
-cleanup(){ rm -rf "$WORK"; }
-trap cleanup EXIT
-STAGE="$WORK/package"
-mkdir -p "$STAGE"
-unzip -q "$SOURCE_ARCHIVE" -d "$STAGE"
-
-# Overlay first-class repository files without deleting or replacing unrelated
-# files from the original source archive.
+mkdir -p "$STAGE" "$DIST"
 cp "$ROOT/plugin.yml" "$STAGE/plugin.yml"
-if [[ -d "$ROOT/src" ]]; then
-  mkdir -p "$STAGE/src"
-  cp -a "$ROOT/src/." "$STAGE/src/"
-fi
+cp -a "$ROOT/src/." "$STAGE/src/"
 if [[ -d "$ROOT/resources" ]]; then
-  mkdir -p "$STAGE/resources"
   cp -a "$ROOT/resources/." "$STAGE/resources/"
 fi
 
+echo "Checking PHP syntax..."
 while IFS= read -r -d '' file; do
-  php -l "$file" >/dev/null
-done < <(find "$STAGE" -type f -name '*.php' -print0)
+  php -l "$file"
+done < <(find "$STAGE" "$ROOT/tests" -type f -name '*.php' -print0)
+
+echo "Running dependency-light core regressions..."
 php "$ROOT/tests/run.php"
 
-OUTPUT="$DIST/VivaArcade.phar"
-mkdir -p "$DIST"
+echo "Running UUID storage and idempotent reward tests..."
+php "$ROOT/tests/storage.php"
+
+echo "Building PHAR..."
 rm -f "$OUTPUT"
 php -d phar.readonly=0 -r '
 $stage = $argv[1];
@@ -51,22 +41,28 @@ $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($stage,
 foreach ($iterator as $file) {
     if (!$file->isFile()) { continue; }
     $relative = str_replace(DIRECTORY_SEPARATOR, "/", substr($file->getPathname(), strlen($stage) + 1));
-    if ($relative === "plugin.yml" || str_starts_with($relative, "src/") || str_starts_with($relative, "resources/") || $relative === "LICENSE") {
+    if ($relative === "plugin.yml" || str_starts_with($relative, "src/") || str_starts_with($relative, "resources/")) {
         $phar->addFile($file->getPathname(), $relative);
     }
 }
-if (!$phar->offsetExists("plugin.yml")) { throw new RuntimeException("plugin.yml missing from PHAR"); }
+if (!$phar->offsetExists("plugin.yml") || !$phar->offsetExists("src/VivaArcade/Main.php") || !$phar->offsetExists("resources/config.yml")) {
+    throw new RuntimeException("Required plugin files are missing from the PHAR");
+}
 $phar->setStub($phar->createDefaultStub());
 $phar->stopBuffering();
 $check = new Phar($output);
-if (!$check->offsetExists("plugin.yml")) { throw new RuntimeException("PHAR validation failed"); }
-echo "PHAR OK: {$output}\n";
+$manifest = file_get_contents("phar://" . $output . "/plugin.yml");
+if (!is_string($manifest) || strpos($manifest, "main: VivaArcade\\Main") === false) {
+    throw new RuntimeException("PHAR plugin manifest validation failed");
+}
+echo "PHAR validated: {$output}\n";
 ' "$STAGE" "$OUTPUT"
 
-if command -v sha256sum >/dev/null; then
-  (cd "$DIST" && sha256sum VivaArcade.phar source.zip > SHA256SUMS.txt)
-else
-  php -r 'foreach (array_slice($argv, 1) as $file) { echo hash_file("sha256", $file), "  ", basename($file), "\n"; }' "$OUTPUT" "$SOURCE_ARCHIVE" > "$DIST/SHA256SUMS.txt"
-fi
+(
+  cd "$DIST"
+  sha256sum VivaArcade.phar > SHA256SUMS.txt
+)
 
 echo "Build completed: $OUTPUT"
+echo "SHA256:"
+cat "$DIST/SHA256SUMS.txt"

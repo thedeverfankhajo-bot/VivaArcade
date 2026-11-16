@@ -1,12 +1,37 @@
 name: VivaArcade
 main: VivaArcade\Main
 src-namespace-prefix: VivaArcade
-version: 0.1.0
+version: 0.2.0
 api: 5.0.0
 load: POSTWORLD
-author: thedeverfankhajo-bot
-description: Native PocketMine-MP API 5 arcade network foundation
+author: VivaArcade Contributors
+description: Native Minecraft Bedrock arcade foundation for PocketMine-MP API 5
 website: https://github.com/thedeverfankhajo-bot/VivaArcade
+commands:
+  arcade:
+    description: Open the VivaArcade main menu
+    usage: "/arcade"
+    permission: vivaarcade.command
+  games:
+    description: Browse available games
+    usage: "/games"
+    permission: vivaarcade.command
+  profile:
+    description: View your VivaArcade profile
+    usage: "/profile"
+    permission: vivaarcade.command
+  stats:
+    description: View your game statistics
+    usage: "/stats"
+    permission: vivaarcade.command
+  balance:
+    description: View your Dollar balance
+    usage: "/balance"
+    permission: vivaarcade.command
+  leave:
+    description: Leave your active game
+    usage: "/leave"
+    permission: vivaarcade.command
 permissions:
   vivaarcade.command:
     description: Allows access to VivaArcade player commands

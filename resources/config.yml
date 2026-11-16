@@ -1,0 +1,4 @@
+# VivaArcade runtime settings
+parkour:
+  reward-dollar: 50
+  reward-xp: 30
