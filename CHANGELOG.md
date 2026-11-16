@@ -2,6 +2,12 @@
 
 ## Unreleased - main after 0.7.0
 
+### Game Browser
+- Added All, Featured, Solo and Skill categories backed by the live game catalog.
+- Added a Parkour Rush details form with server-derived online-player/active-run counts and configured reward values.
+- Disclose that Parkour Rush starts directly without matchmaking and currently uses one shared course; unimplemented modes remain hidden.
+- Added an isolated GameCatalog regression suite and included it in the build.
+
 ### World layout
 - Corrected district gateway orientation so each entrance faces its connected illuminated avenue.
 - Added road-facing neon gateway frames and a short illuminated entrance runner.
