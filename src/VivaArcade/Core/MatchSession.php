@@ -131,6 +131,154 @@ final class MatchSession{
         return true;
     }
 
+    /**
+     * Export a versioned, JSON-safe snapshot for a trusted storage adapter.
+     * This does not persist data by itself.
+     *
+     * @return array<string, mixed>
+     */
+    public function toArray() : array{
+        return [
+            'schemaVersion' => 1,
+            'id' => $this->id,
+            'gameId' => $this->gameId,
+            'arenaId' => $this->arenaId,
+            'minimumPlayers' => $this->minimumPlayers,
+            'maximumPlayers' => $this->maximumPlayers,
+            'createdAt' => $this->createdAt,
+            'state' => $this->state,
+            'startedAt' => $this->startedAt,
+            'finishedAt' => $this->finishedAt,
+            'participants' => $this->participants,
+            'scores' => $this->scores,
+            'rewardClaims' => array_keys($this->rewardClaims)
+        ];
+    }
+
+    /**
+     * Restore a snapshot after validating every field. Never feed client data here.
+     *
+     * @param array<string, mixed> $data
+     */
+    public static function fromArray(array $data) : self{
+        if(($data['schemaVersion'] ?? null) !== 1){
+            throw new InvalidArgumentException('Unsupported match snapshot schema');
+        }
+
+        foreach(['id', 'gameId', 'arenaId', 'minimumPlayers', 'maximumPlayers', 'createdAt', 'state', 'startedAt', 'finishedAt', 'participants', 'scores', 'rewardClaims'] as $key){
+            if(!array_key_exists($key, $data)){
+                throw new InvalidArgumentException('Missing match snapshot field: ' . $key);
+            }
+        }
+
+        if(!is_string($data['id']) || !is_string($data['gameId']) || !is_string($data['arenaId']) ||
+            !is_int($data['minimumPlayers']) || !is_int($data['maximumPlayers']) || !is_int($data['createdAt']) ||
+            !is_string($data['state']) || (!is_int($data['startedAt']) && $data['startedAt'] !== null) ||
+            (!is_int($data['finishedAt']) && $data['finishedAt'] !== null) ||
+            !is_array($data['participants']) || !is_array($data['scores']) || !is_array($data['rewardClaims']) ||
+            !array_is_list($data['rewardClaims'])){
+            throw new InvalidArgumentException('Invalid match snapshot field types');
+        }
+
+        $session = new self(
+            $data['id'],
+            $data['gameId'],
+            $data['arenaId'],
+            $data['minimumPlayers'],
+            $data['maximumPlayers'],
+            $data['createdAt']
+        );
+
+        $validStates = [self::WAITING, self::COUNTDOWN, self::RUNNING, self::FINISHED, self::CANCELLED];
+        if(!in_array($data['state'], $validStates, true)){
+            throw new InvalidArgumentException('Invalid match snapshot state');
+        }
+        if(in_array($data['state'], [self::WAITING, self::COUNTDOWN], true) &&
+            ($data['startedAt'] !== null || $data['finishedAt'] !== null)){
+            throw new InvalidArgumentException('Invalid timestamps for pending match');
+        }
+        if($data['state'] === self::RUNNING && ($data['startedAt'] === null || $data['finishedAt'] !== null)){
+            throw new InvalidArgumentException('Invalid timestamps for running match');
+        }
+        if($data['state'] === self::FINISHED && $data['finishedAt'] === null){
+            throw new InvalidArgumentException('Finished match requires a finish timestamp');
+        }
+        if($data['state'] === self::CANCELLED && $data['finishedAt'] !== null){
+            throw new InvalidArgumentException('Cancelled match cannot have a finish timestamp');
+        }
+        if($data['startedAt'] !== null && $data['finishedAt'] !== null && $data['finishedAt'] < $data['startedAt']){
+            throw new InvalidArgumentException('Match finish timestamp precedes its start');
+        }
+
+        $participants = [];
+        foreach($data['participants'] as $uuid => $participant){
+            if(!is_string($uuid) || !is_array($participant) ||
+                !array_key_exists('joinedAt', $participant) || !is_int($participant['joinedAt']) ||
+                !array_key_exists('connected', $participant) || !is_bool($participant['connected']) ||
+                !array_key_exists('eliminated', $participant) || !is_bool($participant['eliminated'])){
+                throw new InvalidArgumentException('Invalid match participant snapshot');
+            }
+            self::assertUuid($uuid);
+            $participants[$uuid] = [
+                'joinedAt' => $participant['joinedAt'],
+                'connected' => $participant['connected'],
+                'eliminated' => $participant['eliminated']
+            ];
+        }
+        if(count($participants) > $session->maximumPlayers){
+            throw new InvalidArgumentException('Match snapshot exceeds maximum player count');
+        }
+        if(in_array($data['state'], [self::COUNTDOWN, self::RUNNING, self::FINISHED], true) &&
+            count($participants) < $session->minimumPlayers){
+            throw new InvalidArgumentException('Match snapshot has fewer participants than its minimum');
+        }
+        if($data['state'] === self::CANCELLED && $data['startedAt'] !== null &&
+            count($participants) < $session->minimumPlayers){
+            throw new InvalidArgumentException('Started cancelled match has fewer participants than its minimum');
+        }
+
+        $scores = [];
+        foreach($data['scores'] as $uuid => $score){
+            if(!is_string($uuid) || !is_int($score) || $score < 0 || !isset($participants[$uuid])){
+                throw new InvalidArgumentException('Invalid match score snapshot');
+            }
+            $scores[$uuid] = $score;
+        }
+        if(count($scores) !== count($participants)){
+            throw new InvalidArgumentException('Match snapshot participant and score indexes differ');
+        }
+
+        $rewardClaims = [];
+        foreach($data['rewardClaims'] as $claim){
+            if(!is_string($claim)){
+                throw new InvalidArgumentException('Invalid reward claim snapshot');
+            }
+            $separator = strpos($claim, ':');
+            if($separator === false){
+                throw new InvalidArgumentException('Invalid reward claim key');
+            }
+            $uuid = substr($claim, 0, $separator);
+            $rewardKey = substr($claim, $separator + 1);
+            self::assertUuid($uuid);
+            if(!isset($participants[$uuid]) || $rewardKey === '' || strlen($rewardKey) > 80 || isset($rewardClaims[$claim])){
+                throw new InvalidArgumentException('Invalid or duplicate reward claim snapshot');
+            }
+            $rewardClaims[$claim] = true;
+        }
+
+        if($data['state'] !== self::FINISHED && $rewardClaims !== []){
+            throw new InvalidArgumentException('Only a finished match may contain reward claims');
+        }
+
+        $session->state = $data['state'];
+        $session->startedAt = $data['startedAt'];
+        $session->finishedAt = $data['finishedAt'];
+        $session->participants = $participants;
+        $session->scores = $scores;
+        $session->rewardClaims = $rewardClaims;
+        return $session;
+    }
+
     public function getId() : string{ return $this->id; }
     public function getGameId() : string{ return $this->gameId; }
     public function getArenaId() : string{ return $this->arenaId; }

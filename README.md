@@ -1,30 +1,36 @@
 # VivaArcade
 
-**Native Minecraft Bedrock arcade plugin for PocketMine-MP API 5**  
-PHP 8.1+ · dedicated `VivaArcade` world · Finglish player-facing UI
+**Native Minecraft Bedrock arcade foundation for PocketMine-MP API 5**
 
-> **Delivery status: Phase 2 core safeguards are implemented and verified by CI (79 checks). The Phase 1 source archive is truncated, so a complete production plugin and PHAR cannot currently be reconstructed. This is not the requested complete arcade network.**
+PHP 8.1+ · Dedicated `VivaArcade` world · Native Bedrock Forms · UUID player profiles
 
-## Current project contents
+> **Release scope:** this integration adds a PocketMine plugin foundation, first-run dedicated-world builder, native Bedrock forms, Solo Parkour Rush and UUID-based reward persistence. Dependency-light matchmaking, party and match-snapshot services are also retained and tested. This is not yet the requested 24+ mode production arcade network.
 
-`dist/source.zip` is present but **invalid/truncated** (7,501 bytes; no ZIP end-of-central-directory record). The archive ends partway through `src/VivaArcade/Lobby/LobbyManager.php`, so it cannot be extracted or used to build a complete plugin. Older project notes describe a 15-mode Phase 1 implementation, but those files are not recoverable from the currently committed archive. Restore a complete source archive before treating that baseline as installable or playable.
+## Implemented
 
-This repository also contains dependency-light Phase 2 core primitives:
+- PocketMine-MP API 5 plugin entry point and registered player commands.
+- Dedicated `VivaArcade` world load/create through the official PocketMine WorldManager.
+- First-run plaza, decorative pylons, connector and Parkour Rush course builder.
+- Existing world data is not cleared. Existing unmarked worlds are preserved and gameplay is disabled until a reviewed migration has been completed.
+- Native Bedrock JSON form for the main menu and game selector; no external FormAPI dependency.
+- Solo Parkour Rush with server-side timer, checkpoint, fall recovery, finish and server-side reward.
+- UUID-keyed JSON player profiles, per-player file locks, atomic replacement and duplicate-transaction protection.
+- Lobby block break/place protection and active Parkour disconnect cleanup.
+- Dependency-light arena ownership, matchmaking queue, isolated match-session and UUID party core services.
+- Versioned, validated match snapshot codec with deterministic snapshot regression checks.
+- World export script that refuses to invent or export a missing LevelDB world.
 
-- isolated match state machine with server-owned participant and score state;
-- FIFO queue coordinator with one-queue-per-UUID and one-active-match-per-player protection, including immediate cleanup when queued players disconnect;
-- exclusive arena reservation and owner-scoped release;
-- connected-player minimum checks before match countdown/start, disconnect/reconnect routing and bounded terminal match history;
-- UUID-based party membership with invite acceptance, decline/cancellation, strict expiry and leader management;
-- 79 deterministic core checks, including disconnected-queue cleanup, connected-player minimums, invite expiry and simultaneous isolated match sessions.
+## Not yet implemented / not connected to the live PMMP adapter
 
-These Phase 2 classes remain dependency-light core services and are not yet connected to live PMMP commands, forms, scheduler, game adapters, persistent match recovery or in-game party delivery/chat. The new safeguards are covered by deterministic core regressions, but they do not constitute a playable multiplayer network. See [docs/PHASE2-CORE.md](docs/PHASE2-CORE.md) and [docs/STATUS.md](docs/STATUS.md).
+The following requested systems are **not complete**: 24+ playable minigames, live matchmaking and independent arena instances, party forms/chat and party queue integration, teams/private matches, durable match recovery, a general-purpose economy transaction API and cosmetic shops, daily/weekly challenges, tournaments/events, live leaderboards, admin panel, SQLite adapter, spectator mode, full inventory/state restoration, and the large multi-district world design.
+
+The existing queue and party classes are core primitives; they are not yet wired to live commands, forms, a scheduler or PocketMine player events. Do not interpret a registered core game ID as a live playable minigame.
 
 ## Requirements
 
 - PocketMine-MP 5 on a supported PHP 8.1+ runtime.
-- PHP CLI with `Phar`, `json`, `hash`, and `zlib` extensions for packaging.
-- `unzip` for extracting the original source bundle. `zip` is needed only for world export.
+- PHP CLI with `Phar`, `json`, `hash` and `zlib` extensions for packaging.
+- `sha256sum` for the final checksum.
 
 ## Build
 
@@ -33,26 +39,58 @@ chmod +x build.sh
 ./build.sh
 ```
 
-The build script checks the ZIP archive before extracting it. It currently **fails intentionally** because `dist/source.zip` is truncated and lacks its ZIP directory/footer. No `dist/VivaArcade.phar` has been produced. After the original complete source is restored, the build will lint PHP, run core tests, create and validate the PHAR manifest, then write SHA-256 checksums. It refuses to package an incomplete plugin.
+The build packages the repository's real `src/`, `resources/` and root `plugin.yml`; it no longer attempts to extract the damaged historical `dist/source.zip`. It runs PHP syntax checks, core regressions, UUID storage tests and match-snapshot tests, validates the PHAR manifest and writes `dist/SHA256SUMS.txt`.
 
-## Install plugin
+## Install
 
-Installation is **blocked** until the complete Phase 1 source archive is restored and a PHAR is built. Do not install a placeholder or partial PHAR. Live PocketMine-MP startup and Bedrock client verification have not been performed.
+1. Build the PHAR using the command above.
+2. Copy `dist/VivaArcade.phar` into the PocketMine-MP `plugins/` directory.
+3. Start PocketMine-MP. On first launch, the plugin asks PocketMine to create `worlds/VivaArcade/` and populates the initial plaza and Parkour Rush course.
+4. Join with a Bedrock client and use `/arcade`.
 
-## Dedicated World export
+The code has not yet been validated on a live PocketMine server or Bedrock client. Test on a disposable PMMP 5 server before public deployment.
 
-A LevelDB world archive is **not** committed because no PocketMine runtime is available in this build environment to generate and verify it. After starting the plugin on the target PMMP server, allow it to save the world, stop PocketMine cleanly, and run:
+## Commands currently registered
+
+| Command | Description |
+|---|---|
+| `/arcade` | Open the main menu |
+| `/games` | Browse the implemented game mode |
+| `/profile` | View level, XP, Dollar and profile statistics |
+| `/stats` | View basic game statistics |
+| `/balance` | View Dollar balance |
+| `/leave` | Leave active Parkour Rush |
+
+Other commands from the long-term specification are not registered yet.
+
+## World and arena management
+
+The world name is `VivaArcade` and is managed through PocketMine's official WorldManager. The first-run builder records its layout version and state in the plugin data folder (`world-layout-v1.json`).
+
+The builder populates a new world, or resumes a build explicitly marked `building`. It does not clear an existing unmarked map. Back up an existing world before a reviewed migration; do not delete the state file to force regeneration.
+
+## Player data and economy
+
+Profiles are stored under the plugin data folder with filenames based on player UUID. JSON writes use a per-player lock file and atomic rename. A malformed profile is not silently replaced with defaults.
+
+Parkour completion uses a unique server-created transaction ID to prevent duplicate credits. The current Dollar field is a limited Parkour reward balance, not yet the full economy, shop or transaction-history feature set requested.
+
+## Dedicated world export
+
+A LevelDB world archive can only be exported after a real PocketMine runtime has generated and saved the world. Stop PocketMine cleanly, then run:
 
 ```bash
 VIVAARCADE_SERVER_STOPPED=1 ./scripts/export-world.sh
 ```
 
-The script checks for `level.dat` and the `db/` LevelDB directory, writes `dist/VivaArcade-World.zip`, verifies the ZIP, and prints its SHA-256. It refuses to export while the explicit stopped-server flag is absent.
+The script requires `worlds/VivaArcade/level.dat` and a non-empty `worlds/VivaArcade/db/` LevelDB directory. It refuses to fabricate a world ZIP. No runtime-generated world ZIP is included with this source integration.
 
-## Existing player commands
+## Tests and verification boundary
 
-Older Phase 1 documentation lists `/arcade`, `/games`, `/profile`, `/challenges`, `/rewards`, `/shop`, `/top`, and `/arcadeadmin`. These commands have not been verified from the damaged source archive and should not be treated as an installable command set.
+```bash
+php tests/run.php
+php tests/storage.php
+php tests/snapshot.php
+```
 
-## Verification boundary
-
-GitHub Actions verified PHP 8.1 syntax, shell-script syntax and 79 pure-core regression checks. The PHAR build then correctly stopped because the source ZIP is malformed. No plugin startup, Bedrock forms, world/LevelDB loading, gameplay, load testing or client rendering has been verified. See [docs/TEST-RESULTS.md](docs/TEST-RESULTS.md) and [docs/SOURCE-RECOVERY.md](docs/SOURCE-RECOVERY.md).
+These tests cover dependency-light match/queue/party services and JSON reward persistence. They do not simulate PocketMine startup, LevelDB, Bedrock forms, in-world movement physics, load or client rendering. See [docs/STATUS.md](docs/STATUS.md), [docs/TEST-RESULTS.md](docs/TEST-RESULTS.md) and [docs/BRANCH-MERGE.md](docs/BRANCH-MERGE.md).
