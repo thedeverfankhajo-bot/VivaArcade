@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace VivaArcade\World;
 
+use InvalidArgumentException;
+use pocketmine\block\utils\DyeColor;
+
 /**
- * Stable coordinates and player-facing Finglish names for VivaArcade districts.
+ * Stable coordinates, Finglish labels and API-5 dye mappings for districts.
  */
 final class DistrictDirectory{
 
@@ -40,6 +43,30 @@ final class DistrictDirectory{
             ['id' => 'tutorial-zone', 'label' => 'Mantaqe Tutorial', 'x' => 0, 'z' => 96, 'color' => 'blue'],
             ['id' => 'secret-reward-area', 'label' => 'Ganje Makfi', 'x' => 48, 'z' => 96, 'color' => 'magenta']
         ];
+    }
+
+    /**
+     * PocketMine-MP 5.44.3 DyeColor is a unit enum, not a backed enum.
+     */
+    public static function toDyeColor(string $key) : DyeColor{
+        return match($key){
+            'white' => DyeColor::WHITE,
+            'orange' => DyeColor::ORANGE,
+            'magenta' => DyeColor::MAGENTA,
+            'light_blue' => DyeColor::LIGHT_BLUE,
+            'yellow' => DyeColor::YELLOW,
+            'lime' => DyeColor::LIME,
+            'pink' => DyeColor::PINK,
+            'gray' => DyeColor::GRAY,
+            'cyan' => DyeColor::CYAN,
+            'purple' => DyeColor::PURPLE,
+            'blue' => DyeColor::BLUE,
+            'brown' => DyeColor::BROWN,
+            'green' => DyeColor::GREEN,
+            'red' => DyeColor::RED,
+            'black' => DyeColor::BLACK,
+            default => throw new InvalidArgumentException('Unknown district dye color: ' . $key)
+        };
     }
 
     /**
