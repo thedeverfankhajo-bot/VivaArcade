@@ -51,7 +51,7 @@ final class WorldBuilder{
         yield from $this->mainPlaza();
         yield from $this->districtRoads();
         foreach(DistrictDirectory::all() as $district){
-            $color = DyeColor::from($district['color']);
+            $color = DistrictDirectory::toDyeColor($district['color']);
             yield from $this->district($district['x'], $district['z'], $color);
             yield from $this->districtAccess($district['x'], $district['z'], $color);
         }
