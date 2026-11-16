@@ -34,6 +34,29 @@ try{
     storageCheck($afterSecond["dollar"] === 90 && $afterSecond["stats"]["games"] === 2, "second transaction is applied");
     storageCheck($afterSecond["stats"]["best_parkour_ms"] === 39000, "best time improves");
 
+    // An overflow must fail before any profile mutation is persisted.
+    $overflowFields = ["xp", "games", "wins", "score"];
+    foreach($overflowFields as $index => $field){
+        $overflowUuid = sprintf("00000000-0000-4000-8000-%012d", $index + 3);
+        $overflowProfile = $storage->getProfile($overflowUuid, "Overflow");
+        if($field === "xp"){
+            $overflowProfile["xp"] = PHP_INT_MAX;
+        }else{
+            $overflowProfile["stats"][$field] = PHP_INT_MAX;
+        }
+        $overflowPath = $directory . DIRECTORY_SEPARATOR . $overflowUuid . ".json";
+        file_put_contents($overflowPath, json_encode($overflowProfile, JSON_THROW_ON_ERROR));
+        $beforeOverflow = file_get_contents($overflowPath);
+        $overflowRejected = false;
+        try{
+            $storage->completeParkour($overflowUuid, "Overflow", 42000, 50, 30, "overflow-" . $field);
+        }catch(RuntimeException){
+            $overflowRejected = true;
+        }
+        storageCheck($overflowRejected, "Parkour {$field} overflow is rejected");
+        storageCheck(file_get_contents($overflowPath) === $beforeOverflow, "Parkour {$field} overflow leaves profile unchanged");
+    }
+
     $invalidUuidRejected = false;
     try{
         $storage->getProfile("not-a-uuid", "Tester");

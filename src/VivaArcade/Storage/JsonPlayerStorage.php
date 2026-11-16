@@ -168,9 +168,21 @@ final class JsonPlayerStorage{
                 if(isset($profile["processed"][$key])){
                     return false;
                 }
+                $scoreAward = max(1, 100_000 - $durationMs);
+                foreach(["games", "wins", "score"] as $counter){
+                    if(!is_int($profile["stats"][$counter] ?? null) || $profile["stats"][$counter] < 0){
+                        throw new RuntimeException("Parkour statistics are invalid");
+                    }
+                }
                 if($profile["dollar"] > PHP_INT_MAX - $dollarReward ||
                     $profile["total_earned"] > PHP_INT_MAX - $dollarReward){
                     throw new RuntimeException("Parkour Dollar reward overflow");
+                }
+                if($profile["xp"] > PHP_INT_MAX - $xpReward ||
+                    $profile["stats"]["games"] === PHP_INT_MAX ||
+                    $profile["stats"]["wins"] === PHP_INT_MAX ||
+                    $profile["stats"]["score"] > PHP_INT_MAX - $scoreAward){
+                    throw new RuntimeException("Parkour progression overflow");
                 }
 
                 $profile["processed"][$key] = true;
@@ -180,7 +192,7 @@ final class JsonPlayerStorage{
                 $profile["level"] = 1 + intdiv($profile["xp"], 100);
                 $profile["stats"]["games"]++;
                 $profile["stats"]["wins"]++;
-                $profile["stats"]["score"] += max(1, 100_000 - $durationMs);
+                $profile["stats"]["score"] += $scoreAward;
                 if($profile["stats"]["best_parkour_ms"] === 0 || $durationMs < $profile["stats"]["best_parkour_ms"]){
                     $profile["stats"]["best_parkour_ms"] = $durationMs;
                 }

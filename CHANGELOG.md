@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.6.1 - 2026-11-17
+
+### Security and reliability
+- Added pre-commit integer-overflow checks for Parkour Rush XP, game/win counters and score progression.
+- Rejects malformed progression counters before updating a profile.
+- Added regression cases proving overflow failures do not persist partial profile mutations.
+
+### Verification
+- Automated CI and PHAR packaging are triggered by this source update; results are recorded after the workflow completes.
+
 ## 0.6.0 - 2026-11-16
 
 ### Added

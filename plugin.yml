@@ -1,7 +1,7 @@
 name: VivaArcade
 main: VivaArcade\Main
 src-namespace-prefix: VivaArcade
-version: 0.6.0
+version: 0.6.1
 api: 5.0.0
 load: POSTWORLD
 author: VivaArcade Contributors
