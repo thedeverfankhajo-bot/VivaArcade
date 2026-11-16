@@ -16,7 +16,7 @@ This repository also contains dependency-light Phase 2 core primitives:
 - exclusive arena reservation and owner-scoped release;
 - UUID-based party membership with strict invite-expiry deadlines and leader management;
 - validated version-1 MatchSession snapshots for trusted storage adapters (serialization only; not persistent recovery);
-- 58 deterministic core checks, including simultaneous isolated match sessions.
+- 60 deterministic core checks, including simultaneous isolated match sessions.
 
 These Phase 2 classes are not yet connected to live PMMP commands, forms, scheduler, game adapters or persistent crash recovery. See [docs/PHASE2-CORE.md](docs/PHASE2-CORE.md) and [docs/STATUS.md](docs/STATUS.md).
 
