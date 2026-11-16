@@ -6,6 +6,7 @@ namespace VivaArcade\World;
 
 use Generator;
 use pocketmine\block\Block;
+use pocketmine\block\utils\DyeColor;
 use pocketmine\block\VanillaBlocks;
 use pocketmine\math\Vector3;
 
@@ -33,13 +34,6 @@ final class WorldBuilder{
                 $district['z'] - 10,
                 $district['z'] + 10
             );
-            $this->addChunkRectangle(
-                $chunks,
-                $district['x'] - 10,
-                $district['x'] + 10,
-                $district['z'] - 10,
-                $district['z'] + 10
-            );
         }
 
         foreach([-72, 0, 72] as $z){
@@ -58,7 +52,7 @@ final class WorldBuilder{
         yield from $this->mainPlaza();
         yield from $this->districtRoads();
         foreach(DistrictDirectory::all() as $district){
-            yield from $this->district($district['x'], $district['z'], $district['color']);
+            yield from $this->district($district['x'], $district['z'], DyeColor::from($district['color']));
         }
         yield from $this->parkourCourse();
 
@@ -124,7 +118,8 @@ final class WorldBuilder{
      */
     private function districtRoads() : Generator{
         foreach([-72, 0, 72] as $z){
-            for($x = -120; $x <= 120; ++$x){
+            $endX = $z === 0 ? 95 : 120;
+            for($x = -120; $x <= $endX; ++$x){
                 foreach([-1, 0, 1] as $offset){
                     $block = $offset !== 0
                         ? VanillaBlocks::SEA_LANTERN()
