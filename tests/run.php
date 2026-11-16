@@ -111,6 +111,8 @@ check(!$parties->accept($players[2], 2044), 'cancelled invite cannot be accepted
 check($parties->invite($players[1], $players[2], 2045), 'leader can send final invite');
 check($parties->cleanupExpiredInvites(2075) === 1, 'invite expires at its exact deadline');
 check(!$parties->accept($players[2], 2075), 'invite cannot be accepted at expiry timestamp');
+check($parties->invite($players[1], $players[2], 2076), 'leader can invite after expiry cleanup');
+check($parties->accept($players[2], 2077), 'fresh invite can be accepted after expiry cleanup');
 check($parties->kick($players[1], $players[2]), 'leader can kick a member');
 check($parties->getPartyFor($players[2]) === null, 'kicked member is removed from index');
 
