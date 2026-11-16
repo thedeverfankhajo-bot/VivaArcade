@@ -35,7 +35,7 @@ final class WorldBuilder{
             for($z = -16; $z <= 16; ++$z){
                 $edge = abs($x) === 16 || abs($z) === 16;
                 $lane = ($x % 8) === 0 || ($z % 8) === 0;
-                $block = $edge ? VanillaBlocks::SEA_LANTERN() : ($lane ? VanillaBlocks::BLUE_CONCRETE() : VanillaBlocks::QUARTZ_BLOCK());
+                $block = $edge ? VanillaBlocks::SEA_LANTERN() : ($lane ? VanillaBlocks::CONCRETE()->setColor(DyeColor::BLUE) : VanillaBlocks::QUARTZ());
                 $world->setBlockAt($x, 100, $z, $block, false);
             }
         }
@@ -43,7 +43,7 @@ final class WorldBuilder{
         for($x = -5; $x <= 5; ++$x){
             for($z = -5; $z <= 5; ++$z){
                 if(abs($x) === 5 || abs($z) === 5){
-                    $world->setBlockAt($x, 101, $z, VanillaBlocks::CYAN_CONCRETE(), false);
+                    $world->setBlockAt($x, 101, $z, VanillaBlocks::CONCRETE()->setColor(DyeColor::CYAN), false);
                 }
             }
         }
@@ -55,7 +55,7 @@ final class WorldBuilder{
     private function buildPylons(World $world) : void{
         foreach([[-13, -13], [-13, 13], [13, -13], [13, 13]] as [$x, $z]){
             for($y = 68; $y <= 99; ++$y){
-                $block = ($y % 5 === 0) ? VanillaBlocks::CYAN_CONCRETE() : VanillaBlocks::BLUE_CONCRETE();
+                $block = ($y % 5 === 0) ? VanillaBlocks::CONCRETE()->setColor(DyeColor::CYAN) : VanillaBlocks::CONCRETE()->setColor(DyeColor::BLUE);
                 $world->setBlockAt($x, $y, $z, $block, false);
             }
             $world->setBlockAt($x, 100, $z, VanillaBlocks::SEA_LANTERN(), false);
@@ -66,7 +66,7 @@ final class WorldBuilder{
     private function buildConnector(World $world) : void{
         for($x = 17; $x <= 95; ++$x){
             for($z = -2; $z <= 2; ++$z){
-                $block = abs($z) === 2 ? VanillaBlocks::SEA_LANTERN() : (($z === 0) ? VanillaBlocks::CYAN_CONCRETE() : VanillaBlocks::QUARTZ_BLOCK());
+                $block = abs($z) === 2 ? VanillaBlocks::SEA_LANTERN() : (($z === 0) ? VanillaBlocks::CONCRETE()->setColor(DyeColor::CYAN) : VanillaBlocks::QUARTZ());
                 $world->setBlockAt($x, 100, $z, $block, false);
             }
         }
@@ -87,10 +87,10 @@ final class WorldBuilder{
 
         foreach($platforms as [$centerX, $y, $centerZ, $kind]){
             $base = match($kind){
-                "start" => VanillaBlocks::BLUE_CONCRETE(),
-                "checkpoint" => VanillaBlocks::GOLD_BLOCK(),
-                "finish" => VanillaBlocks::DIAMOND_BLOCK(),
-                default => VanillaBlocks::CYAN_CONCRETE()
+                "start" => VanillaBlocks::CONCRETE()->setColor(DyeColor::BLUE),
+                "checkpoint" => VanillaBlocks::GOLD(),
+                "finish" => VanillaBlocks::DIAMOND(),
+                default => VanillaBlocks::CONCRETE()->setColor(DyeColor::CYAN)
             };
             for($dx = -1; $dx <= 1; ++$dx){
                 for($dz = -1; $dz <= 1; ++$dz){
