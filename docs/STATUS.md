@@ -24,10 +24,10 @@ This document distinguishes shipped source, tested core logic and unverified run
 
 | Area | Status | Notes |
 |---|---|---|
-| Match lifecycle | Core tested | State machine, participants, score validation, disconnect/reconnect and single reward claims. |
+| Match lifecycle | Core tested | State machine, participants, score validation, disconnect/reconnect, single reward claims and validated JSON snapshot codec. |
 | Queue coordination | Core tested | FIFO queue, UUID uniqueness, minimum/maximum player limits and isolated session creation. |
 | Arena ownership | Core tested | Exclusive reservation and owner-scoped release. |
-| Party membership | Core tested | UUID membership, leader, invites, expiry, kick/leave and leadership transfer. |
+| Party membership | Core tested | UUID membership, leader, invites (exact-deadline expiry), kick/leave and leadership transfer. |
 
 **Important:** These classes are not yet wired into the PMMP plugin lifecycle, `/queue` command, Bedrock UI, scheduler, mini-game gameplay adapters or persistent crash-recovery flow. They are not represented as a playable multiplayer system yet.
 
