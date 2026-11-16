@@ -30,6 +30,9 @@ php "$ROOT/tests/run.php"
 echo "Running UUID storage and idempotent reward tests..."
 php "$ROOT/tests/storage.php"
 
+echo "Running Dollar wallet and ledger tests..."
+php "$ROOT/tests/economy.php"
+
 echo "Running match snapshot codec tests..."
 php "$ROOT/tests/snapshot.php"
 

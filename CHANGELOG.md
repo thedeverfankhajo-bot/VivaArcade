@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.5.0 - 2026-11-16
+
+### Added
+- Added Economy/WalletService with server-side credit/debit operations and transaction-source allow-lists.
+- Added an idempotent Dollar ledger with signed entries, post-transaction balances, earned/spent lifetime totals and a bounded 100-entry history.
+- Added balance-underflow and integer-overflow guards to wallet transactions.
+- Added standalone wallet tests for credits, duplicate IDs, purchases, insufficient funds, source validation and wallet summaries.
+
+### Changed
+- Parkour Rush completion now updates total Dollar earnings and records the post-reward balance while preserving its single atomic reward/profile transaction.
+- Existing profiles migrate missing earned/spent totals from their retained transaction history without discarding profile data.
+- Main now composes WalletService and uses it for the /balance command.
+- Build now runs the economy regression suite before creating the PHAR.
+- Plugin metadata version is now 0.5.0.
+
+### Verification boundary
+- This source update adds dependency-light wallet coverage. Full PocketMine-MP startup, Bedrock client, world rendering, live shop integration and runtime PHAR installation still require separate verification.
+
 ## 0.4.0 - 2026-11-16
 
 ### Added

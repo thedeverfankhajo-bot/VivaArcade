@@ -15,6 +15,7 @@ use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 use pocketmine\plugin\PluginBase;
 use pocketmine\world\World;
+use VivaArcade\Economy\WalletService;
 use VivaArcade\Forms\ArcadeForm;
 use VivaArcade\Lobby\LobbyManager;
 use VivaArcade\Games\ParkourRush;
@@ -27,6 +28,7 @@ final class Main extends PluginBase implements Listener{
     private ?World $arcadeWorld = null;
     private ?LobbyManager $lobby = null;
     private ?JsonPlayerStorage $storage = null;
+    private ?WalletService $wallet = null;
     private ?ParkourRush $parkour = null;
     private bool $worldPlayable = false;
 
@@ -37,6 +39,7 @@ final class Main extends PluginBase implements Listener{
         try{
             $this->saveDefaultConfig();
             $this->storage = new JsonPlayerStorage($this->getDataFolder() . 'players');
+            $this->wallet = new WalletService($this->storage);
             $worldManager = new ArcadeWorldManager($this);
             $this->arcadeWorld = $worldManager->load(function() : void{
                 $this->worldPlayable = true;
@@ -239,12 +242,12 @@ final class Main extends PluginBase implements Listener{
     }
 
     private function showBalance(Player $player) : void{
-        $profile = $this->storage?->getProfile($player->getUniqueId()->toString(), $player->getName());
-        if($profile === null){
+        $balance = $this->wallet?->getBalance($player->getUniqueId()->toString(), $player->getName());
+        if($balance === null){
             $player->sendMessage('Mojoodi dar hale hazer dar dastres nist.');
             return;
         }
-        $player->sendMessage('Mojoodi Shoma: $' . $profile['dollar']);
+        $player->sendMessage('Mojoodi Shoma: $' . $balance);
     }
 
     private function sendForm(Player $player, ArcadeForm $form) : void{

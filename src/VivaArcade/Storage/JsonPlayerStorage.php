@@ -14,6 +14,8 @@ use Throwable;
  */
 final class JsonPlayerStorage{
 
+    private const MAX_DOLLAR_TRANSACTION = 1_000_000;
+
     public function __construct(private readonly string $directory){
         if(!is_dir($directory) && !mkdir($directory, 0770, true) && !is_dir($directory)){
             throw new RuntimeException("Unable to create player storage directory");
@@ -23,6 +25,72 @@ final class JsonPlayerStorage{
     /** @return array<string, mixed> */
     public function getProfile(string $uuid, string $playerName) : array{
         return $this->transact($uuid, $playerName, static fn(array &$profile) : array => $profile);
+    }
+
+    /**
+     * Apply a signed Dollar delta as one idempotent, locked profile transaction.
+     * Positive deltas are credits; negative deltas are debits.
+     */
+    public function applyDollarTransaction(
+        string $uuid,
+        string $playerName,
+        int $delta,
+        string $type,
+        string $transactionId
+    ) : bool{
+        if($delta === 0 || $delta < -self::MAX_DOLLAR_TRANSACTION || $delta > self::MAX_DOLLAR_TRANSACTION){
+            throw new InvalidArgumentException("Invalid Dollar transaction amount");
+        }
+        if(!preg_match('/^[a-z][a-z0-9_]{1,31}$/', $type)){
+            throw new InvalidArgumentException("Invalid Dollar transaction type");
+        }
+        self::assertTransactionId($transactionId);
+
+        return $this->transact(
+            $uuid,
+            $playerName,
+            static function(array &$profile) use ($delta, $type, $transactionId) : bool{
+                $key = hash("sha256", $transactionId);
+                if(isset($profile["processed"][$key])){
+                    return false;
+                }
+
+                $balance = (int) $profile["dollar"];
+                if($delta < 0 && $balance < -$delta){
+                    return false;
+                }
+                if($delta > 0 && $balance > PHP_INT_MAX - $delta){
+                    throw new RuntimeException("Dollar balance overflow");
+                }
+
+                if($delta > 0){
+                    if($profile["total_earned"] > PHP_INT_MAX - $delta){
+                        throw new RuntimeException("Dollar earned total overflow");
+                    }
+                    $profile["total_earned"] += $delta;
+                }else{
+                    $spent = -$delta;
+                    if($profile["total_spent"] > PHP_INT_MAX - $spent){
+                        throw new RuntimeException("Dollar spent total overflow");
+                    }
+                    $profile["total_spent"] += $spent;
+                }
+
+                $profile["dollar"] = $balance + $delta;
+                $profile["processed"][$key] = true;
+                $profile["transactions"][] = [
+                    "id" => $transactionId,
+                    "type" => $type,
+                    "amount" => $delta,
+                    "balance_after" => $profile["dollar"],
+                    "created_at" => time()
+                ];
+                if(count($profile["transactions"]) > 100){
+                    $profile["transactions"] = array_slice($profile["transactions"], -100);
+                }
+                return true;
+            }
+        );
     }
 
     public function completeParkour(
@@ -39,9 +107,7 @@ final class JsonPlayerStorage{
         if($dollarReward < 0 || $dollarReward > 100_000 || $xpReward < 0 || $xpReward > 100_000){
             throw new InvalidArgumentException("Invalid Parkour Rush reward");
         }
-        if($transactionId === "" || strlen($transactionId) > 128){
-            throw new InvalidArgumentException("Invalid transaction id");
-        }
+        self::assertTransactionId($transactionId);
 
         return $this->transact(
             $uuid,
@@ -51,9 +117,14 @@ final class JsonPlayerStorage{
                 if(isset($profile["processed"][$key])){
                     return false;
                 }
+                if($profile["dollar"] > PHP_INT_MAX - $dollarReward ||
+                    $profile["total_earned"] > PHP_INT_MAX - $dollarReward){
+                    throw new RuntimeException("Parkour Dollar reward overflow");
+                }
 
                 $profile["processed"][$key] = true;
                 $profile["dollar"] += $dollarReward;
+                $profile["total_earned"] += $dollarReward;
                 $profile["xp"] += $xpReward;
                 $profile["level"] = 1 + intdiv($profile["xp"], 100);
                 $profile["stats"]["games"]++;
@@ -67,6 +138,7 @@ final class JsonPlayerStorage{
                     "id" => $transactionId,
                     "type" => "parkour_rush",
                     "amount" => $dollarReward,
+                    "balance_after" => $profile["dollar"],
                     "created_at" => time()
                 ];
                 if(count($profile["transactions"]) > 100){
@@ -131,8 +203,35 @@ final class JsonPlayerStorage{
         $data["level"] = max(1, (int) ($data["level"] ?? 1));
         $data["stats"] = array_merge($defaults["stats"], is_array($data["stats"] ?? null) ? $data["stats"] : []);
         $data["transactions"] = is_array($data["transactions"] ?? null) ? $data["transactions"] : [];
+        $data["total_earned"] = max(0, (int) ($data["total_earned"] ?? self::sumLegacyTransactions($data["transactions"], true)));
+        $data["total_spent"] = max(0, (int) ($data["total_spent"] ?? self::sumLegacyTransactions($data["transactions"], false)));
         $data["processed"] = is_array($data["processed"] ?? null) ? $data["processed"] : [];
         return $data;
+    }
+
+    /**
+     * @param array<mixed> $transactions
+     */
+    private static function sumLegacyTransactions(array $transactions, bool $credits) : int{
+        $total = 0;
+        foreach($transactions as $transaction){
+            if(!is_array($transaction) || !is_int($transaction["amount"] ?? null)){
+                continue;
+            }
+            $amount = $transaction["amount"];
+            if(($credits && $amount <= 0) || (!$credits && $amount >= 0)){
+                continue;
+            }
+            if($amount === PHP_INT_MIN){
+                return PHP_INT_MAX;
+            }
+            $value = $credits ? $amount : -$amount;
+            if($total > PHP_INT_MAX - $value){
+                return PHP_INT_MAX;
+            }
+            $total += $value;
+        }
+        return $total;
     }
 
     /** @param array<string, mixed> $profile */
@@ -169,6 +268,8 @@ final class JsonPlayerStorage{
             "level" => 1,
             "xp" => 0,
             "dollar" => 0,
+            "total_earned" => 0,
+            "total_spent" => 0,
             "stats" => [
                 "games" => 0,
                 "wins" => 0,
@@ -183,6 +284,12 @@ final class JsonPlayerStorage{
     private static function assertUuid(string $uuid) : void{
         if(!preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i', $uuid)){
             throw new InvalidArgumentException("Invalid player UUID");
+        }
+    }
+
+    private static function assertTransactionId(string $transactionId) : void{
+        if($transactionId === "" || strlen($transactionId) > 128 || !preg_match('/^[A-Za-z0-9_.:-]+$/', $transactionId)){
+            throw new InvalidArgumentException("Invalid transaction id");
         }
     }
 }
