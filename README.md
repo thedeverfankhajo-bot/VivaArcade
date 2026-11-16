@@ -55,4 +55,4 @@ Older Phase 1 documentation lists `/arcade`, `/games`, `/profile`, `/challenges`
 
 ## Verification boundary
 
-GitHub Actions verified PHP 8.1 syntax, shell-script syntax and 71 pure-core regression checks. The PHAR build then correctly stopped because the source ZIP is malformed. No plugin startup, Bedrock forms, world/LevelDB loading, gameplay, load testing or client rendering has been verified. See [docs/TEST-RESULTS.md](docs/TEST-RESULTS.md) and [docs/SOURCE-RECOVERY.md](docs/SOURCE-RECOVERY.md).
+GitHub Actions verified PHP 8.1 syntax, shell-script syntax and 79 pure-core regression checks. The PHAR build then correctly stopped because the source ZIP is malformed. No plugin startup, Bedrock forms, world/LevelDB loading, gameplay, load testing or client rendering has been verified. See [docs/TEST-RESULTS.md](docs/TEST-RESULTS.md) and [docs/SOURCE-RECOVERY.md](docs/SOURCE-RECOVERY.md).
