@@ -1,0 +1,16 @@
+name: VivaArcade
+main: VivaArcade\Main
+src-namespace-prefix: VivaArcade
+version: 0.1.0
+api: 5.0.0
+load: POSTWORLD
+author: thedeverfankhajo-bot
+description: Native PocketMine-MP API 5 arcade network foundation
+website: https://github.com/thedeverfankhajo-bot/VivaArcade
+permissions:
+  vivaarcade.command:
+    description: Allows access to VivaArcade player commands
+    default: true
+  vivaarcade.admin:
+    description: Allows access to VivaArcade administration commands
+    default: op
