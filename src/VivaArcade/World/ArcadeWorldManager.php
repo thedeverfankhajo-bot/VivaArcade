@@ -13,7 +13,7 @@ use Throwable;
 
 /**
  * Loads the dedicated world and schedules a resumable, tick-budgeted layout.
- * Existing worlds with a completed older layout are deliberately preserved.
+ * Existing completed maps are deliberately preserved until an explicit migration.
  */
 final class ArcadeWorldManager{
 
@@ -65,7 +65,10 @@ final class ArcadeWorldManager{
             }
         }
 
-        $needsBuild = $newWorld || ($version >= self::LAYOUT_VERSION && $state === 'building');
+        // "building" is only written by our own builder. Replaying the
+        // deterministic operation stream is safe even for an older interrupted
+        // layout because it edits only the reserved VivaArcade coordinates.
+        $needsBuild = $newWorld || $state === 'building';
         if($needsBuild){
             $this->writeState($stateFile, 'building');
             $builder = new WorldBuilder();
