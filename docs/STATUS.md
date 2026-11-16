@@ -20,7 +20,7 @@ The archive is **not extractable** and must not be used for deployment. It is 7,
 | Area | Status | Notes |
 |---|---|---|
 | Match lifecycle | Core tested | State machine, connected-player minimum checks before countdown/start, participant score validation, disconnect/reconnect and single reward claims. |
-| Queue coordination | Core tested | FIFO queue, UUID uniqueness, minimum/maximum player limits, explicit disconnect/reconnect routing, concurrent isolated sessions and bounded in-memory terminal history. |
+| Queue coordination | Core tested | FIFO queue, UUID uniqueness, minimum/maximum player limits, immediate removal of disconnected queued players, active-match disconnect/reconnect routing, concurrent isolated sessions and bounded in-memory terminal history. |
 | Arena ownership | Core tested | Exclusive reservation and owner-scoped release. |
 | Party membership | Core tested | UUID membership, leader, invite/decline/cancel, strict expiry, kick/leave and leadership transfer. |
 
