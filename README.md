@@ -3,11 +3,11 @@
 **Native Minecraft Bedrock arcade plugin for PocketMine-MP API 5**  
 PHP 8.1+ · dedicated `VivaArcade` world · Finglish player-facing UI
 
-> **Delivery status: Phase 1 gameplay plus tested Phase 2 core primitives. This is not yet the complete arcade-network specification.**
+> **Delivery status: Phase 2 core safeguards are implemented and verified by CI (71 checks). The Phase 1 source archive is truncated, so a complete production plugin and PHAR cannot currently be reconstructed. This is not the requested complete arcade network.**
 
 ## Current project contents
 
-The existing `dist/source.zip` is the authoritative Phase 1 source bundle and is preserved unchanged. It contains the original PMMP API 5 plugin, 15 solo mini-game modes, first-run dedicated-world builder, native Bedrock forms, UUID player profiles, daily rewards/challenges, locked JSON Dollar economy, one cosmetic and basic leaderboards.
+`dist/source.zip` is present but **invalid/truncated** (7,501 bytes; no ZIP end-of-central-directory record). The archive ends partway through `src/VivaArcade/Lobby/LobbyManager.php`, so it cannot be extracted or used to build a complete plugin. Older project notes describe a 15-mode Phase 1 implementation, but those files are not recoverable from the currently committed archive. Restore a complete source archive before treating that baseline as installable or playable.
 
 This repository also contains dependency-light Phase 2 core primitives:
 
@@ -16,7 +16,7 @@ This repository also contains dependency-light Phase 2 core primitives:
 - exclusive arena reservation and owner-scoped release;
 - connected-player minimum checks before match countdown/start, disconnect/reconnect routing and bounded terminal match history;
 - UUID-based party membership with invite acceptance, decline/cancellation, strict expiry and leader management;
-- 50 deterministic core checks, including simultaneous isolated match sessions.
+- 71 deterministic core checks, including connected-player minimums, invite expiry and simultaneous isolated match sessions.
 
 These Phase 2 classes remain dependency-light core services and are not yet connected to live PMMP commands, forms, scheduler, game adapters, persistent match recovery or in-game party delivery/chat. The new safeguards are covered by deterministic core regressions, but they do not constitute a playable multiplayer network. See [docs/PHASE2-CORE.md](docs/PHASE2-CORE.md) and [docs/STATUS.md](docs/STATUS.md).
 
@@ -33,18 +33,11 @@ chmod +x build.sh
 ./build.sh
 ```
 
-The build script validates `dist/source.zip`, extracts it into a temporary staging directory, overlays repository `src/` and `resources/` files without deleting the original files, lints every PHP file, runs the core tests, creates a real `dist/VivaArcade.phar`, validates the PHAR manifest and writes SHA-256 checksums.
-
-The build intentionally fails when the source archive is missing or invalid rather than producing a partial PHAR.
+The build script checks the ZIP archive before extracting it. It currently **fails intentionally** because `dist/source.zip` is truncated and lacks its ZIP directory/footer. No `dist/VivaArcade.phar` has been produced. After the original complete source is restored, the build will lint PHP, run core tests, create and validate the PHAR manifest, then write SHA-256 checksums. It refuses to package an incomplete plugin.
 
 ## Install plugin
 
-1. Build `dist/VivaArcade.phar` using the command above.
-2. Copy it to the PocketMine-MP server's `plugins/` directory.
-3. Start the server and inspect the server console for plugin errors.
-4. Connect using Minecraft Bedrock and use `/arcade` or `/games` from the Phase 1 source.
-
-The plugin generates/loads the `VivaArcade` world through PocketMine's world manager. Do not manually create a placeholder `worlds/VivaArcade` folder.
+Installation is **blocked** until the complete Phase 1 source archive is restored and a PHAR is built. Do not install a placeholder or partial PHAR. Live PocketMine-MP startup and Bedrock client verification have not been performed.
 
 ## Dedicated World export
 
@@ -58,8 +51,8 @@ The script checks for `level.dat` and the `db/` LevelDB directory, writes `dist/
 
 ## Existing player commands
 
-The current Phase 1 plugin documents `/arcade`, `/games`, `/profile`, `/challenges`, `/rewards`, `/shop`, `/top`, and `/arcadeadmin`. Consult `dist/README-INSTALL.txt` and the in-game help for the exact commands provided by the original source bundle.
+Older Phase 1 documentation lists `/arcade`, `/games`, `/profile`, `/challenges`, `/rewards`, `/shop`, `/top`, and `/arcadeadmin`. These commands have not been verified from the damaged source archive and should not be treated as an installable command set.
 
 ## Verification boundary
 
-Local PHP syntax and pure-core tests can run without PocketMine. They do not prove plugin startup, Bedrock form compatibility, world/LevelDB loading, gameplay correctness, concurrency safety under load or client rendering. These require an actual PMMP 5 server and Bedrock clients. See [docs/TEST-RESULTS.md](docs/TEST-RESULTS.md).
+GitHub Actions verified PHP 8.1 syntax, shell-script syntax and 71 pure-core regression checks. The PHAR build then correctly stopped because the source ZIP is malformed. No plugin startup, Bedrock forms, world/LevelDB loading, gameplay, load testing or client rendering has been verified. See [docs/TEST-RESULTS.md](docs/TEST-RESULTS.md) and [docs/SOURCE-RECOVERY.md](docs/SOURCE-RECOVERY.md).
