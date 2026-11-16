@@ -17,6 +17,7 @@ use pocketmine\plugin\PluginBase;
 use pocketmine\world\Position;
 use pocketmine\world\World;
 use VivaArcade\Forms\ArcadeForm;
+use VivaArcade\Lobby\LobbyManager;
 use VivaArcade\Games\ParkourRush;
 use VivaArcade\Storage\JsonPlayerStorage;
 use VivaArcade\World\ArcadeWorldManager;
@@ -25,6 +26,7 @@ use Throwable;
 final class Main extends PluginBase implements Listener{
 
     private ?World $arcadeWorld = null;
+    private ?LobbyManager $lobby = null;
     private ?JsonPlayerStorage $storage = null;
     private ?ParkourRush $parkour = null;
     private bool $worldPlayable = false;
@@ -50,6 +52,7 @@ final class Main extends PluginBase implements Listener{
                 max(1, min(1000, (int) ($parkourConfig["reward-dollar"] ?? 50))),
                 max(1, min(500, (int) ($parkourConfig["reward-xp"] ?? 30)))
             );
+            $this->lobby = new LobbyManager($this->arcadeWorld);
 
             $this->getServer()->getPluginManager()->registerEvents($this, $this);
             $status = $this->worldPlayable ? "World layout ready." : "Existing world preserved; layout setup is required before games can start.";
@@ -96,6 +99,14 @@ final class Main extends PluginBase implements Listener{
             case "balance":
                 $this->showBalance($sender);
                 return true;
+            case "spawn":
+                $this->parkour?->leave($sender, false);
+                if($this->lobby?->teleport($sender) !== true){
+                    $sender->sendMessage("Bazgasht be Lobby anjam nashod.");
+                }else{
+                    $sender->sendMessage("Be Lobby bargashtid!");
+                }
+                return true;
             case "leave":
                 if($this->parkour?->leave($sender, true) !== true){
                     $sender->sendMessage("Shoma dar hich bazi faali nistid.");
@@ -107,10 +118,7 @@ final class Main extends PluginBase implements Listener{
 
     public function onJoin(PlayerJoinEvent $event) : void{
         $player = $event->getPlayer();
-        if($this->arcadeWorld !== null){
-            $spawn = $this->arcadeWorld->getSpawnLocation();
-            $player->teleport(new Position($spawn->x, $spawn->y, $spawn->z, $this->arcadeWorld));
-        }
+        $this->lobby?->teleport($player);
         $player->sendMessage("Be VivaArcade khosh amadid! Baraye didane menu /arcade ra bezanid.");
     }
 

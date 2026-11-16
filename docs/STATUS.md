@@ -10,6 +10,7 @@ Updated: 2026-11-16
 - Solo Parkour Rush with server-owned timer, checkpoint, fall recovery, finish and unique reward transaction IDs.
 - UUID-keyed JSON player profile storage with file locking and atomic replacement.
 - Lobby block break/place protection and disconnect cleanup for active Parkour sessions.
+- Dedicated `LobbyManager` owns lobby teleport routing; `/spawn` exits Parkour Rush before returning a player to the saved world spawn.
 - Dependency-light QueueManager, ArenaPool, MatchSession and PartyManager.
 - Versioned match snapshots with validation of identities, states, timestamps, participants, score indexes, player limits and reward claims.
 - Export script that requires an actual stopped-server LevelDB world before packaging.
@@ -24,7 +25,7 @@ Updated: 2026-11-16
 
 ## Not implemented
 
-24+ playable modes, arena instance cloning/reset, live matchmaking, party invitation UI/chat/queueing, spectator mode, private/team matches, SQLite, full atomic economy/shops/cosmetics, daily/weekly/seasonal challenges, tournaments/events, persistent leaderboard displays, admin panel, complete crash recovery/inventory restoration, and full performance/load testing.
+24+ playable modes, arena instance cloning/reset, live matchmaking, party invitation UI/chat/queueing, spectator mode, private/team matches, SQLite, full atomic economy/shops/cosmetics, daily/weekly/seasonal challenges, tournaments/events, persistent leaderboard displays, admin panel, complete crash recovery/inventory restoration, and full performance/load testing. The `/spawn` command is a lobby-navigation utility and does not imply those unimplemented systems are available.
 
 ## Build and release
 

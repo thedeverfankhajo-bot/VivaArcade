@@ -33,6 +33,35 @@ try{
     $afterSecond = $storage->getProfile($uuid, "Tester");
     storageCheck($afterSecond["dollar"] === 90 && $afterSecond["stats"]["games"] === 2, "second transaction is applied");
     storageCheck($afterSecond["stats"]["best_parkour_ms"] === 39000, "best time improves");
+
+    $invalidUuidRejected = false;
+    try{
+        $storage->getProfile("not-a-uuid", "Tester");
+    }catch(InvalidArgumentException){
+        $invalidUuidRejected = true;
+    }
+    storageCheck($invalidUuidRejected, "invalid UUID is rejected");
+
+    $negativeRewardRejected = false;
+    try{
+        $storage->completeParkour($uuid, "Tester", 30000, -1, 10, "negative-reward");
+    }catch(InvalidArgumentException){
+        $negativeRewardRejected = true;
+    }
+    storageCheck($negativeRewardRejected, "negative reward is rejected");
+
+    $corruptUuid = "00000000-0000-4000-8000-000000000002";
+    $corruptPath = $directory . DIRECTORY_SEPARATOR . $corruptUuid . ".json";
+    $corruptPayload = "{invalid-json";
+    file_put_contents($corruptPath, $corruptPayload);
+    $corruptProfilePreserved = false;
+    try{
+        $storage->getProfile($corruptUuid, "Broken");
+    }catch(RuntimeException){
+        $corruptProfilePreserved = file_get_contents($corruptPath) === $corruptPayload;
+    }
+    storageCheck($corruptProfilePreserved, "corrupt profile is rejected without overwriting source data");
+
     echo "PASS: {$checks} VivaArcade storage checks\n";
 }finally{
     if(is_dir($directory)){

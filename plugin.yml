@@ -32,6 +32,10 @@ commands:
     description: Leave your active game
     usage: "/leave"
     permission: vivaarcade.command
+  spawn:
+    description: Return to the arcade lobby
+    usage: "/spawn"
+    permission: vivaarcade.command
 permissions:
   vivaarcade.command:
     description: Allows access to VivaArcade player commands

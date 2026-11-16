@@ -60,6 +60,7 @@ The code has not yet been validated on a live PocketMine server or Bedrock clien
 | `/stats` | View basic game statistics |
 | `/balance` | View Dollar balance |
 | `/leave` | Leave active Parkour Rush |
+| `/spawn` | Return to the VivaArcade lobby from anywhere |
 
 Other commands from the long-term specification are not registered yet.
 
