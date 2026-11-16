@@ -17,22 +17,22 @@ Updated: 2026-11-17
 - Parkour progression overflow checks and no-partial-write regression coverage.
 
 ## Latest verification
-- Current feature commit on main: 7b3e366596980ac07e13ba5c44105b609e4f8a4e (district gateway alignment and Spawn canopy).
-- PHP CI #43981599070 passed on this commit; PHP 8.1.34 and shell/PHP syntax checks passed.
-- Six regression suites: 374 assertions passed (core 86, storage 20, economy 19, daily 18, snapshot 13, world layout 218).
-- PHAR manifest validation, packaging and artifact upload passed. SHA-256: 8428f40ee07f898a7e795f5cc6e947f5a8423dc0956fc4f7ae9ff76c371d303c.
-- PHAR artifact: https://github.com/thedeverfankhajo-bot/VivaArcade/actions/runs/43981599070/artifacts/14283173555
-- PocketMine-MP 5.44.3 world workflow #43981599175 passed on the same commit; plugin booted, layout completed, server stopped cleanly, LevelDB files were verified and unzip -t passed.
+- Current main HEAD: d731e9fb794ae56b24e98392f294cf7d85b52cc9 (categorized Game Browser and test coverage).
+- PHP CI #43982942080 passed on this exact commit using PHP 8.1.34. Shell checks, PHP syntax checks, all seven regression suites, PHAR manifest validation, packaging and artifact upload passed.
+- Seven suites: 389 assertions (core 86, storage 20, economy 19, daily 18, snapshot 13, world layout 218, game catalog 15).
+- PHAR SHA-256: b070a66c052a4a20e8ed0ca2f07000aeae8a41779f13d1faf5bbf34dded93b1a.
+- PHAR artifact: https://github.com/thedeverfankhajo-bot/VivaArcade/actions/runs/43982942080/artifacts/14284450909
+- The separate PocketMine-MP 5.44.3 world workflow #43981599175 passed on layout commit 7b3e366596980ac07e13ba5c44105b609e4f8a4e. World-generation files were unchanged in the Game Browser phase; this world ZIP was not regenerated against the final UI commit.
 - World ZIP SHA-256: f6de82a73a4217378409a8b11b8e0dbe016a4aa9220d0223063d4dd02ec76caa.
 - World artifact: https://github.com/thedeverfankhajo-bot/VivaArcade/actions/runs/43981599175/artifacts/14281779262
-- Non-fatal warning remains in tests/economy.php: importing global InvalidArgumentException with a use statement has no effect; tests pass.
+- Non-fatal pre-existing warning remains in tests/economy.php: importing global InvalidArgumentException with a use statement has no effect; tests pass.
 
 ## Partial / not production-ready
 - No Bedrock client was connected; Native Bedrock form rendering, player interaction, movement timing and visual inspection remain unverified.
 - Matchmaking queue and arena primitives are not connected to live PMMP queues, countdown tasks, match instances or arena cloning/reset.
 - Party state is in-memory and is not restored after restart; party queue/private match integration is not implemented.
 - Wallet is connected to `/balance` and daily rewards only; shop, challenge and achievement payouts are not wired.
-- Main menu currently exposes implemented profile, Party, stats, Parkour Rush, daily reward and help paths only.
+- Main menu currently exposes implemented profile, Party, stats, the categorized Game Browser (Parkour Rush only), daily reward and help paths only.
 
 ## Not implemented
 24+ playable modes, isolated arena cloning/reset, live matchmaking, party queueing, team/private matches, shop and cosmetics, challenge catalogue, tournaments, persistent leaderboards, scoreboard, achievements, admin panel, SQLite, full inventory/state restoration, full crash recovery, load testing and Resource Pack remain unimplemented.
